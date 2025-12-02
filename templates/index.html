@@ -575,6 +575,9 @@
 </div>
 
 <script>
+    // API Key injected from server (Securely loaded from .env)
+    const API_KEY = "{{ api_key }}";
+
     // Preserve scroll position on reload
     document.addEventListener("DOMContentLoaded", function(event) { 
         var scrollpos = localStorage.getItem('scrollpos');
@@ -662,26 +665,40 @@
     // Call prediction on load
     updatePrediction();
 
-    // --- NEW AJAX FORM HANDLER ---
+    // --- NEW AJAX FORM HANDLER (UPDATED FOR JSON + API KEY) ---
     async function handleForm(event, endpoint) {
         event.preventDefault(); // Stop page reload
         
-        // Get the button that was clicked (to get the 'value' for vehicle type)
         const submitter = event.submitter;
         const form = event.target;
         const formData = new FormData(form);
         
-        // If a button with a value was clicked (like vehicle type), append it
         if (submitter && submitter.name && submitter.value) {
             formData.append(submitter.name, submitter.value);
         }
 
+        // Convert FormData to JSON object
+        const plainFormData = Object.fromEntries(formData.entries());
+        
+        // Ensure numeric types are actually numbers for Pydantic validation
+        if (plainFormData.duration) plainFormData.duration = parseFloat(plainFormData.duration);
+        if (plainFormData.slot) plainFormData.slot = parseInt(plainFormData.slot);
+
         try {
             const response = await fetch(endpoint, {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-KEY': API_KEY
+                },
+                body: JSON.stringify(plainFormData)
             });
+            
             const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.detail || data.message || "Request failed");
+            }
             
             // Determine message type
             const isError = data.message.includes('FULL') || data.message.includes('Invalid') || data.message.includes('Cannot');
@@ -694,13 +711,12 @@
             // Clear Exit form only
             if(endpoint.includes('exit')) {
                 form.reset();
-                // Double check update for exit to ensure visual clear
                 setTimeout(updateGrid, 100); 
             }
             
         } catch (error) {
             console.error('Action failed:', error);
-            showNotification("System Error: Check Console", "error");
+            showNotification(error.message, "error");
         }
     }
 
@@ -722,31 +738,40 @@
     let simInterval = null;
 
     async function setPattern(mode) {
-        const formData = new FormData();
-        formData.append('mode', mode);
         await fetch('/api/simulate/pattern', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-KEY': API_KEY
+            },
+            body: JSON.stringify({ mode: mode })
         });
         logSim(`Traffic Pattern switched to: ${mode}`);
     }
 
     async function addToQueue(type) {
-        const formData = new FormData();
-        formData.append('type', type);
-        formData.append('duration', 2.0);
+        const payload = {
+            type: type,
+            duration: 2.0
+        };
         
         const response = await fetch('/api/simulate/add_vehicle', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-KEY': API_KEY
+            },
+            body: JSON.stringify(payload)
         });
         const data = await response.json();
-        // Log the actual message from backend which includes Priority
         logSim(`Manual Add: ${data.message}`);
     }
 
     async function undoLastVehicle() {
-        const response = await fetch('/api/simulate/undo', { method: 'POST' });
+        const response = await fetch('/api/simulate/undo', { 
+            method: 'POST',
+            headers: { 'X-API-KEY': API_KEY }
+        });
         const data = await response.json();
         logSim(data.message);
     }
@@ -767,7 +792,9 @@
 
     async function runSimStep() {
         try {
-            const response = await fetch('/api/simulate/step');
+            const response = await fetch('/api/simulate/step', {
+                headers: { 'X-API-KEY': API_KEY }
+            });
             const data = await response.json();
             
             // Update Logs & Trigger Notifications

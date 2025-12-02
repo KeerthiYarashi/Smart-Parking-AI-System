@@ -29,6 +29,20 @@ class BillingALU:
         rate = self.RATES.get(vehicle_type, 10)
         return round(simulated_hours * rate, 2)
 
+class IntrusionDetectionSystem:
+    """
+    Simple IDS to log security events.
+    Triggered by:
+    - 403 Forbidden (Invalid API Key)
+    - 422 Unprocessable Entity (Validation Errors)
+    """
+    def log_event(self, ip, reason, severity="MEDIUM"):
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"🛡️ [IDS ALERT] {timestamp} | IP: {ip} | Severity: {severity} | Reason: {reason}")
+
+# Global IDS Instance
+ids = IntrusionDetectionSystem()
+
 class PriorityEncoder:
     """
     DDCO Concept: Priority Encoder & Bus Arbitration

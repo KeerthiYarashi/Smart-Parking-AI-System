@@ -65,6 +65,8 @@ It simulates a hardware-based parking controller using Python (FastAPI), impleme
 
 The User Interface is designed to act as the **I/O (Input/Output) Unit** of the system, now featuring **Real-Time AJAX Updates** (no page reloads).
 
+> 📘 **Detailed Guide:** For a complete walkthrough of the dashboard, see the [User Guide](EXTRA/USER_GUIDE.md).
+
 ### 1. Control Panel (Center - Input Unit)
 *   **System Mode Selector:** Switches the Control Unit logic:
     *   **MANUAL:** Strict slot matching.
@@ -121,13 +123,33 @@ flowchart TD
     end
 ```
 
+## ⚙️ How It Works (Technical Workflow)
+
+The system follows a strict **Input-Process-Output** cycle, mimicking a hardware controller:
+
+1.  **Input (Frontend & API):**
+    *   User triggers an action via the Web UI.
+    *   **Security Check:** The request is intercepted. The `X-API-KEY` header is verified.
+    *   **Validation:** The JSON payload is checked against Pydantic models (e.g., ensuring positive duration).
+    *   **Sanitization:** Inputs are scanned for script tags to prevent injection attacks.
+
+2.  **Process (Controller Logic):**
+    *   **Priority Encoder:** The vehicle type is converted to a priority level (0-4).
+    *   **MUX (Slot Selection):** The system scans memory (`self.slots`) for a free spot matching the type and current **Traffic Mode** (Manual/Peak/Event).
+    *   **ALU (Billing):** If a slot is found, the cost is calculated: `Rate * Duration`.
+    *   **FSM (Robots):** If in simulation mode, a Robot agent transitions states (`IDLE` -> `MOVING` -> `PARKING`) to physically "move" the data to the slot.
+
+3.  **Output (Memory & UI):**
+    *   **Write Back:** The vehicle data is written to the specific Slot ID in the `slots` dictionary.
+    *   **Feedback:** The UI receives a JSON response and updates the Grid and Charts via AJAX.
+
 ---
 
 ## 🔧 Installation & Run
 
 1.  **Install Dependencies:**
     ```bash
-    pip install fastapi uvicorn jinja2 python-multipart
+    pip install fastapi uvicorn jinja2 python-multipart python-dotenv
     ```
 
 2.  **Run the System:**
@@ -140,11 +162,104 @@ flowchart TD
 
 ---
 
+## 🧰 Tech Stack (Detailed)
+
+This project uses a lightweight, modern stack focused on Python backend APIs, a minimal templated frontend, and simple tooling for local development and optional containerized deployment.
+
+- Language
+  - Python 3.10+ (recommended). Used for all backend logic, simulation, AI prediction logic and FSM/ALU emulation.
+
+- Backend
+  - FastAPI — ASGI web framework that exposes the REST endpoints and serves the Jinja2 HTML templates. Handles form submissions, JSON APIs, and server events.
+  - Uvicorn — ASGI server for running the FastAPI app in development and production.
+
+- Templating & Frontend
+  - Jinja2 — Server-side HTML templating (templates/index.html).
+  - Vanilla HTML/CSS/JavaScript — Lightweight UI; no SPA framework required.
+  - Chart.js — Client-side charting used to visualize prediction probabilities.
+  - Font Awesome — Iconography for UI elements.
+
+- Dependencies (Python packages)
+  - fastapi
+  - uvicorn
+  - jinja2
+  - python-multipart (for form handling)
+  - (Optional for production) gunicorn + uvicorn workers, or an ASGI process manager.
+
+- Development Tools
+  - pip — Python package installer.
+  - git — Source control.
+  - Optional: Docker & docker-compose for containerized runs.
+
+- Recommended Versions / Commands
+  - Python: 3.10 or newer
+  - Install deps:
+    ```bash
+    python -m pip install -r requirements.txt
+    # or
+    pip install fastapi uvicorn jinja2 python-multipart
+    ```
+  - Run locally:
+    ```bash
+    python main.py
+    # or
+    uvicorn main:app --reload
+    ```
+  - Build & run with Docker (optional):
+    - Create a simple Dockerfile that installs Python, copies project files, installs requirements, and runs uvicorn.
+    - docker build -t ddco-parking .
+    - docker run -p 8000:8000 ddco-parking
+
+- Roles & Where They Live in the Repo
+  - controller.py — Core simulation, ALU (billing), Priority Encoder, PredictionEngine, FSM logic and slot memory register.
+  - main.py — FastAPI routes that wire UI forms and AJAX endpoints to ParkingLot methods.
+  - templates/index.html — UI, AJAX handlers, Chart.js integration and visualization of registers/robots/queue.
+  - README.md — Project overview, installation and this tech stack documentation.
+
+- Notes & Best Practices
+  - Keep long-running or CPU-heavy prediction logic separate (e.g., background tasks or a separate worker) if you scale beyond a single process.
+  - Use uvicorn/gunicorn with multiple workers behind a reverse proxy (nginx) for production.
+  - Pin package versions in requirements.txt for reproducible installs.
+  - Consider adding a lightweight REST test suite (pytest + httpx) to validate API contract.
+
+---
+
 ## 🚀 Future Scope
 
 *   **FPGA Integration:** Port the Python logic to Verilog/VHDL.
 *   **IoT Sensors:** Replace manual button inputs with IR sensors.
 *   **License Plate Recognition:** Automated input using Image Processing.
+
+---
+
+## 🛡️ Security Testing
+
+To verify that the **API Key Authentication** and **Input Validation** modules are active:
+
+> 🔐 **Deep Dive:** Read the full [Cybersecurity Implementation Guide](EXTRA/SECURITY_IMPLEMENTATION.md) to understand the 6 layers of defense (Auth, IDS, Sanitization, etc.).
+
+1.  Ensure the server is running:
+    ```bash
+    python main.py
+    ```
+2.  Open a new terminal and run the security test script (No extra dependencies required):
+    ```bash
+    python test_security.py
+    ```
+
+**Expected Output:**
+*   ✅ **PASS:** Auth Check: Missing Header (403 Forbidden)
+*   ✅ **PASS:** Auth Check: Wrong Key (403 Forbidden)
+*   ✅ **PASS:** Validation: Negative Duration (422 Unprocessable Entity)
+*   ✅ **PASS:** Sanitization: Script Injection (422 Unprocessable Entity)
+*   ✅ **PASS:** Valid Request: Normal Entry (200 OK)
+
+### 📊 Understanding the Status Codes
+*   **HTTP 403 (Forbidden):** 🛑 **Security Block.** The system successfully rejected a request with a missing or wrong API Key.
+*   **HTTP 422 (Unprocessable Entity):** 🛡️ **Validation Block.** The system successfully rejected invalid data (e.g., negative time) or malicious inputs (scripts).
+*   **HTTP 200 (OK):** ✅ **Success.** The request passed all security checks and was processed.
+
+*Note: Seeing "403" or "422" in the logs means the security system is **working** and blocking bad requests.*
 
 ---
 
