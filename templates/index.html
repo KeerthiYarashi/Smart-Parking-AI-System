@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Parking AI - DDCO Project</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Chart.js for Data Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Modern Palette based on prompt */
+            --primary-bg: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+            --text-color: #2c3e50;
+            --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            
+            /* Accent Colors */
+            --color-vip: #ffd700;
+            --color-ev: #00c6ff;
+            --color-amb: #ff416c;
+            --color-senior: #11998e;
+            --color-normal: #6c757d;
+            --color-reserved: #8e44ad;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--primary-bg);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-color);
+            background-attachment: fixed;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 1400px;
+            width: 95%;
+            margin: 0 auto;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Header Improvements */
+        .header { text-align: center; margin-bottom: 50px; }
+        .header h2 { 
+            font-size: clamp(2rem, 5vw, 3rem); 
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+        .header p { 
+            color: #555; 
+            font-size: 1.1em; 
+            font-weight: 500;
+            background: rgba(255,255,255,0.5);
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        /* Glass Panel Refinement */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: var(--glass-border);
+            backdrop-filter: blur(5px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .glass-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            color: #444;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        /* Center Panel Buttons */
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px;
+        }
+        .btn-grid button:first-child { grid-column: span 2; } 
+
+        @media (max-width: 480px) {
+            .btn-grid { grid-template-columns: 1fr; }
+            .btn-grid button:first-child { grid-column: span 1; }
+        }
+
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        button:hover { 
+            transform: translateY(-3px) scale(1.02); 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2); 
+            filter: brightness(1.1);
+        }
+        
+        button:active { transform: translateY(1px); }
+
+        /* Specific Button Colors */
+        .btn-vip { background: linear-gradient(135deg, #FFD700, #FDB931); color: #4a3b00; }
+        .btn-ev { background: linear-gradient(135deg, #00c6ff, #0072ff); }
+        .btn-amb { background: linear-gradient(135deg, #ff416c, #ff4b2b); animation: pulse 2s infinite; }
+        .btn-senior { background: linear-gradient(135deg, #11998e, #38ef7d); }
+        .btn-normal { background: linear-gradient(135deg, #6c757d, #495057); }
+        .btn-reserve { background: linear-gradient(135deg, #8e44ad, #c0392b); }
+
+        /* Search Bar */
+        .search-container {
+            margin: 30px 0 20px 0;
+            position: relative;
+        }
+        .search-input {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            border-radius: 50px;
+            border: 2px solid #eee;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .search-input:focus {
+            border-color: #2a5298;
+            outline: none;
+            box-shadow: 0 5px 20px rgba(42, 82, 152, 0.2);
+        }
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        /* Slot Grid Refinement */
+        .parking-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px;
+        }
+
+        .slot {
+            background: white;
+            padding: 25px;
+            border-radius: 24px;
+            text-align: center;
+            border: 2px solid transparent;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 220px;
+        }
+
+        .slot:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+
+        /* Status Colors */
+        .slot.occupied { background: #fff5f5; border-color: #ffcdd2; }
+        .slot.occupied .slot-icon { color: #e53935; }
+        
+        .slot.free { background: #f0fdf4; border-color: #b9f6ca; }
+        .slot.free .slot-icon { color: #2e7d32; }
+
+        .slot.reserved { background: #fff3cd; border-color: #ffeeba; }
+        .slot.reserved .slot-icon { color: #856404; }
+
+        .slot.robot-incoming { background: #e3f2fd; border-color: #90caf9; }
+        .slot.robot-incoming .slot-icon { color: #1976d2; animation: bounce 2s infinite; }
+
+        /* Queue Visualization */
+        .queue-display {
+            margin-top: 15px;
+            padding: 15px;
+            background: #2c3e50;
+            color: white;
+            border-radius: 16px;
+            font-family: monospace;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            min-height: 60px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .log-console {
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Consolas', monospace;
+            padding: 15px;
+            border-radius: 16px;
+            height: 180px; /* Fixed height */
+            overflow-y: auto; /* Changed from hidden to auto to enable scrolling */
+            margin-top: 15px;
+            font-size: 0.85em;
+            line-height: 1.6;
+            border: 1px solid #333;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Items start from top */
+        }
+        
+        .log-entry {
+            border-bottom: 1px solid #333;
+            padding-bottom: 2px;
+            margin-bottom: 2px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 65, 108, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 65, 108, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 65, 108, 0); } }
+
+        /* Compact Forms */
+        .compact-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .compact-form input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+        }
+        .compact-form button {
+            padding: 10px 20px;
+            font-size: 1em;
+            flex-direction: row;
+            box-shadow: none;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        #prob-text {
+            font-size: 3em;
+            font-weight: 800;
+            background: linear-gradient(45deg, #00c6ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .duration-input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 1.3em;
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+        }
+        .duration-input:focus { border-color: #00c6ff; outline: none; }
+
+        .slot-time {
+            font-size: 0.75em;
+            color: #d63031;
+            font-weight: bold;
+            margin-top: 5px;
+            background: rgba(255,255,255,0.8);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+        
+        .prediction-list {
+            text-align: left;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .prediction-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sim-panel {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 24px;
+            border: 1px solid #eee;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .sim-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: white;
+            padding: 10px;
+            border-radius: 16px;
+            border: 1px solid #eee;
+        }
+
+        .robot-status {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .robot-card {
+            background: white;
+            padding: 15px 10px;
+            border-radius: 16px;
+            border: 1px solid #eee;
+            flex: 1;
+            text-align: center;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .robot-card.active {
+            border-color: #4caf50;
+            background: #f1f8e9;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Floating Toast Notification - FIXED & VISIBLE */
+        .message {
+            position: fixed;
+            bottom: 30px; /* Changed from top to bottom */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000; /* Always on top */
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1em;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideUpFade 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), fadeOut 0.5s ease 5s forwards;
+            min-width: 300px;
+            max-width: 90%;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .message.success { 
+            background: rgba(212, 237, 218, 0.95); 
+            color: #155724; 
+            border-color: #c3e6cb; 
+        }
+        .message.error { 
+            background: rgba(248, 215, 218, 0.95); 
+            color: #721c24; 
+            border-color: #f5c6cb; 
+        }
+        
+        @keyframes slideUpFade { from { opacity: 0; transform: translate(-50%, 50px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; visibility: hidden; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2><i class="fas fa-parking"></i> Smart Parking AI System</h2>
+        <p>ML POWERED</p>
+    </div>
+
+    {% if message %}
+    <div class="message {% if 'FULL' in message or 'Invalid' in message %}error{% else %}success{% endif %}">
+        {{ message }}
+    </div>
+    {% endif %}
+
+    <div class="dashboard-grid">
+        
+        <!-- COLUMN 1: AI & Stats (Left) -->
+        <div class="glass-panel panel-left">
+            <div class="section-title"><i class="fas fa-brain"></i> AI Forecast</div>
+            <div style="text-align: center;">
+                <div id="prob-text">--%</div>
+                <p style="color: #666; font-weight: 500; font-size: 1em;">Probability of finding a spot</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="predictionChart"></canvas>
+            </div>
+            
+            <div class="prediction-list" id="upcoming-slots">
+                <div class="prediction-item">Loading forecasts...</div>
+            </div>
+        </div>
+
+        <!-- COLUMN 2: Main Controls (Center) -->
+        <div class="glass-panel panel-center" style="border: 2px solid #e0e0e0; background: #fafafa;">
+            <div class="section-title" style="justify-content: center; font-size: 1.4em;"><i class="fas fa-gamepad"></i> Vehicle Entry</div>
+            
+            <!-- MOVED: Traffic Pattern Selector for Global Context -->
+            <div style="margin-bottom: 20px; padding: 0 5px;">
+                <label style="font-size: 0.85em; font-weight: bold; color: #555; display: block; margin-bottom: 5px; text-align: center;">
+                    <i class="fas fa-sliders-h"></i> System Mode (Affects Allocation Rules)
+                </label>
+                <select id="trafficPattern" onchange="setPattern(this.value)" style="padding: 12px; border-radius: 12px; width: 100%; border: 2px solid #ccc; background: white; font-weight:bold; color:#333; cursor:pointer;">
+                    <option value="MANUAL">Manual Mode (Strict Types)</option>
+                    <option value="PEAK">Peak Hours (Normal ➔ VIP Overflow)</option>
+                    <option value="EVENT">Event Day (VIP ➔ Normal Overflow)</option>
+                </select>
+            </div>
+
+            <!-- Updated Entry Form to use AJAX -->
+            <form onsubmit="handleForm(event, '/api/entry')">
+                <label style="display:block; margin-bottom:10px; font-weight:bold; text-align:center; color:#555;">⏱️ Parking Duration (Hours)</label>
+                <input type="number" name="duration" class="duration-input" value="1" min="0.5" step="0.5" required>
+                
+                <div class="btn-grid">
+                    <button name="type" value="AMBULANCE" class="btn-amb">
+                        <i class="fas fa-ambulance"></i> EMERGENCY / AMBULANCE
+                    </button>
+                    <button name="type" value="VIP" class="btn-vip">
+                        <i class="fas fa-crown"></i> VIP
+                    </button>
+                    <button name="type" value="EV" class="btn-ev">
+                        <i class="fas fa-bolt"></i> EV Charging
+                    </button>
+                    <button name="type" value="SENIOR" class="btn-senior">
+                        <i class="fas fa-person-cane"></i> Senior
+                    </button>
+                    <button name="type" value="NORMAL" class="btn-normal">
+                        <i class="fas fa-car"></i> Normal
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- COLUMN 3: Simulation & Misc (Right) -->
+        <div class="glass-panel panel-right">
+            <!-- Simulation -->
+            <div class="sim-panel">
+                <div class="section-title" style="font-size: 1.1em; margin-bottom: 15px;"><i class="fas fa-robot"></i> Auto Sim Control</div>
+                
+                <div class="sim-controls">
+                    <button onclick="addToQueue('NORMAL')" style="background: #6c757d; font-size: 0.8em; padding: 10px; flex: 1;"><i class="fas fa-car"></i> +Car</button>
+                    <button onclick="addToQueue('VIP')" style="background: #FFD700; color: black; font-size: 0.8em; padding: 10px; flex: 1;"><i class="fas fa-crown"></i> +VIP</button>
+                    <!-- New Undo Button -->
+                    <button onclick="undoLastVehicle()" style="background: #dc3545; font-size: 0.8em; padding: 10px; flex: 0.4;" title="Undo Last Entry"><i class="fas fa-undo"></i></button>
+                    <button onclick="toggleSim()" id="simBtn" style="background: #28a745; font-size: 0.8em; padding: 10px; flex: 1.5;"><i class="fas fa-play"></i> Start</button>
+                </div>
+                
+                <div class="robot-status" id="robot-container"></div>
+                <div class="queue-display" id="queue-viz"><span style="color:#aaa; font-style:italic;">Queue is empty</span></div>
+                <div style="font-size: 0.8em; color: #666; margin-top: 10px; font-weight: bold; text-align: right;" id="gen-stats">Total Auto-Gen: 0</div>
+                <div class="log-console" id="sim-logs">
+                    <div class="log-entry">> System Ready...</div>
+                </div>
+            </div>
+
+            <!-- Reserve & Exit -->
+            <div style="margin-top: 25px;">
+                <div class="section-title" style="font-size: 1.1em;"><i class="fas fa-lock"></i> Reserve Slot</div>
+                <!-- Updated Reserve Form with EV Button -->
+                <form onsubmit="handleForm(event, '/api/reserve')" class="compact-form">
+                    <input type="number" name="duration" value="2" min="1" step="0.5" placeholder="Hrs" style="width: 60px; flex: 0 0 60px;">
+                    <button name="type" value="VIP" class="btn-reserve" style="flex:1; font-size: 0.8em; padding: 10px;"><i class="fas fa-crown" style="font-size:1em;"></i> VIP</button>
+                    <button name="type" value="EV" class="btn-reserve" style="flex:1; font-size: 0.8em; padding: 10px; background: linear-gradient(135deg, #00c6ff, #0072ff);"><i class="fas fa-bolt" style="font-size:1em;"></i> EV</button>
+                    <button name="type" value="NORMAL" class="btn-reserve" style="flex:1; font-size: 0.8em; padding: 10px;"><i class="fas fa-car" style="font-size:1em;"></i> Std</button>
+                </form>
+            </div>
+            
+            <div style="margin-top: 25px;">
+                <div class="section-title" style="font-size: 1.1em;"><i class="fas fa-sign-out-alt"></i> Quick Exit</div>
+                <!-- Updated Exit Form -->
+                <form onsubmit="handleForm(event, '/api/exit')" class="compact-form">
+                    <input type="number" name="slot" placeholder="Slot #" required min="1" max="{{ status|length }}">
+                    <button style="background: #343a40;">Exit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title"><i class="fas fa-th"></i> Live Slot Status (Register View)</div>
+    
+    <!-- Search Bar -->
+    <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="slotSearch" class="search-input" placeholder="Search by Slot ID, Type, or Status..." onkeyup="filterSlots()">
+    </div>
+
+    <div class="parking-grid" id="parking-grid-container">
+        <!-- Grid content will be updated by JS or Jinja -->
+        {% for id, s in status.items() %}
+            <div class="slot {% if s.vehicle == 'RESERVED' %}reserved{% elif s.vehicle %}occupied{% else %}free{% endif %}">
+                <div class="slot-header">
+                    <div class="slot-id">{{ id }}</div>
+                    <span class="slot-type-badge">{{ s.type }}</span>
+                </div>
+                
+                <div class="slot-icon">
+                    {% if s.vehicle == 'AMBULANCE' %} <i class="fas fa-ambulance"></i>
+                    {% elif s.vehicle == 'VIP' %} <i class="fas fa-crown"></i>
+                    {% elif s.vehicle == 'EV' %} <i class="fas fa-bolt"></i>
+                    {% elif s.vehicle == 'SENIOR' %} <i class="fas fa-person-cane"></i>
+                    {% elif s.vehicle == 'NORMAL' %} <i class="fas fa-car-side"></i>
+                    {% elif s.vehicle == 'RESERVED' %} <i class="fas fa-lock"></i>
+                    {% else %} <i class="fas fa-parking"></i>
+                    {% endif %}
+                </div>
+
+                <div class="slot-status">
+                    {% if s.vehicle == 'RESERVED' %}
+                        LOCKED
+                    {% elif s.vehicle %}
+                        {{ s.vehicle }}
+                    {% else %}
+                        <span style="color: #28a745;">Available</span>
+                    {% endif %}
+                </div>
+                
+                {% if s.end_time %}
+                    <div class="slot-time">Free at {{ s.end_time.strftime('%H:%M') }}</div>
+                {% endif %}
+                
+                <div style="font-size: 0.8em; color: #999; margin-top: 5px;">{{ s.attr }}</div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // Preserve scroll position on reload
+    document.addEventListener("DOMContentLoaded", function(event) { 
+        var scrollpos = localStorage.getItem('scrollpos');
+        if (scrollpos) window.scrollTo(0, scrollpos);
+    });
+
+    window.onbeforeunload = function(e) {
+        localStorage.setItem('scrollpos', window.scrollY);
+    };
+
+    // Fetch AI Prediction Data
+    async function updatePrediction() {
+        try {
+            const response = await fetch('/api/predict');
+            const data = await response.json();
+            
+            document.getElementById('prob-text').innerText = data.probability + "%";
+            
+            // Peak Hour Warning
+            if (data.is_peak) {
+                if (!document.getElementById('peak-warning')) {
+                    const warning = document.createElement('div');
+                    warning.id = 'peak-warning';
+                    warning.style.fontSize = '0.4em';
+                    warning.style.color = 'orange';
+                    warning.style.marginTop = '5px';
+                    warning.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Peak Hour Traffic';
+                    document.getElementById('prob-text').appendChild(warning);
+                }
+            } else {
+                const w = document.getElementById('peak-warning');
+                if (w) w.remove();
+            }
+
+            // Update Chart
+            myChart.data.datasets[0].data = [data.probability, 100 - data.probability];
+            myChart.update();
+            
+            // Update Upcoming Slots List
+            const listDiv = document.getElementById('upcoming-slots');
+            if (data.upcoming && data.upcoming.length > 0) {
+                let html = '<strong>⏳ Upcoming Availability:</strong>';
+                data.upcoming.forEach(item => {
+                    let timeStr = "";
+                    if (item.hours_left > 0) timeStr += `${item.hours_left}h `;
+                    timeStr += `${item.mins_left}m`;
+
+                    html += `<div class="prediction-item">
+                        <i class="fas fa-clock" style="color:#0072ff;"></i> 
+                        Slot <b>${item.slot}</b> free at <b>${item.free_at}</b> 
+                        <span style="color:#666; font-size:0.9em;">(in ${timeStr})</span>
+                    </div>`;
+                });
+                listDiv.innerHTML = html;
+            } else {
+                listDiv.innerHTML = '<div class="prediction-item">No occupied slots freeing up soon.</div>';
+            }
+            
+        } catch (error) {
+            console.error('Error fetching prediction:', error);
+        }
+    }
+
+    // Initialize Chart.js
+    const ctx = document.getElementById('predictionChart').getContext('2d');
+    const myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Success', 'Risk'],
+            datasets: [{
+                data: [50, 50],
+                backgroundColor: ['#00c6ff', '#eee'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Call prediction on load
+    updatePrediction();
+
+    // --- NEW AJAX FORM HANDLER ---
+    async function handleForm(event, endpoint) {
+        event.preventDefault(); // Stop page reload
+        
+        // Get the button that was clicked (to get the 'value' for vehicle type)
+        const submitter = event.submitter;
+        const form = event.target;
+        const formData = new FormData(form);
+        
+        // If a button with a value was clicked (like vehicle type), append it
+        if (submitter && submitter.name && submitter.value) {
+            formData.append(submitter.name, submitter.value);
+        }
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            
+            // Determine message type
+            const isError = data.message.includes('FULL') || data.message.includes('Invalid') || data.message.includes('Cannot');
+            
+            showNotification(data.message, isError ? 'error' : 'success');
+            
+            // Refresh Grid immediately
+            await updateGrid();
+            
+            // Clear Exit form only
+            if(endpoint.includes('exit')) {
+                form.reset();
+                // Double check update for exit to ensure visual clear
+                setTimeout(updateGrid, 100); 
+            }
+            
+        } catch (error) {
+            console.error('Action failed:', error);
+            showNotification("System Error: Check Console", "error");
+        }
+    }
+
+    function showNotification(msg, type) {
+        // Remove existing messages to prevent stacking
+        const existing = document.querySelectorAll('.message');
+        existing.forEach(e => e.remove());
+
+        const div = document.createElement('div');
+        div.className = `message ${type}`;
+        div.innerText = msg;
+        document.body.appendChild(div);
+        
+        // Auto remove matches CSS animation time
+        setTimeout(() => div.remove(), 5500);
+    }
+
+    // Simulation Logic
+    let simInterval = null;
+
+    async function setPattern(mode) {
+        const formData = new FormData();
+        formData.append('mode', mode);
+        await fetch('/api/simulate/pattern', {
+            method: 'POST',
+            body: formData
+        });
+        logSim(`Traffic Pattern switched to: ${mode}`);
+    }
+
+    async function addToQueue(type) {
+        const formData = new FormData();
+        formData.append('type', type);
+        formData.append('duration', 2.0);
+        
+        const response = await fetch('/api/simulate/add_vehicle', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        // Log the actual message from backend which includes Priority
+        logSim(`Manual Add: ${data.message}`);
+    }
+
+    async function undoLastVehicle() {
+        const response = await fetch('/api/simulate/undo', { method: 'POST' });
+        const data = await response.json();
+        logSim(data.message);
+    }
+
+    function toggleSim() {
+        const btn = document.getElementById('simBtn');
+        if (simInterval) {
+            clearInterval(simInterval);
+            simInterval = null;
+            btn.innerText = "▶ Start";
+            btn.style.background = "#28a745";
+        } else {
+            simInterval = setInterval(runSimStep, 2500); // Slowed down to 2.5 seconds
+            btn.innerText = "⏸ Pause";
+            btn.style.background = "#dc3545";
+        }
+    }
+
+    async function runSimStep() {
+        try {
+            const response = await fetch('/api/simulate/step');
+            const data = await response.json();
+            
+            // Update Logs & Trigger Notifications
+            data.logs.forEach(log => {
+                logSim(log);
+                // Trigger Web Notification for Robot Actions
+                if (log.includes("picked up Vehicle")) {
+                    showNotification(log, "success");
+                }
+            });
+            
+            // Update Robots
+            const robotDiv = document.getElementById('robot-container');
+            robotDiv.innerHTML = data.robots.map(r => `
+                <div class="robot-card ${r.state !== 'IDLE' ? 'active' : ''}">
+                    <div>🤖 R${r.id}</div>
+                    <div style="font-weight:bold; color:${getStateColor(r.state)}">${r.state}</div>
+                    ${r.vehicle ? `<div>🚗 ${r.vehicle}</div>` : ''}
+                </div>
+            `).join('');
+            
+            // Update Queue Visualization (Visual Badges)
+            const queueDiv = document.getElementById('queue-viz');
+            if (data.queue_len > 0) {
+                // We don't have full queue details in this endpoint, so we simulate visual representation
+                // Ideally backend sends list of vehicle types in queue
+                let qHtml = `<span style="margin-right:10px; font-weight:bold;">Queue (${data.queue_len}):</span>`;
+                for(let i=0; i<Math.min(data.queue_len, 10); i++) {
+                    qHtml += `<div class="queue-item"><i class="fas fa-car"></i></div>`;
+                }
+                if(data.queue_len > 10) qHtml += `<span>+${data.queue_len-10} more</span>`;
+                queueDiv.innerHTML = qHtml;
+            } else {
+                queueDiv.innerHTML = '<span style="color:#aaa; font-style:italic;">Queue is empty</span>';
+            }
+
+            if(data.total_gen !== undefined) {
+                document.getElementById('gen-stats').innerText = `Total Auto-Gen: ${data.total_gen}`;
+            }
+            
+            updateGrid();
+            
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // Search Filter Function
+    function filterSlots() {
+        const input = document.getElementById('slotSearch');
+        const filter = input.value.toUpperCase();
+        const grid = document.getElementById('parking-grid-container');
+        const slots = grid.getElementsByClassName('slot');
+
+        for (let i = 0; i < slots.length; i++) {
+            const txtValue = slots[i].textContent || slots[i].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                slots[i].style.display = "";
+            } else {
+                slots[i].style.display = "none";
+            }
+        }
+    }
+
+    async function updateGrid() {
+        try {
+            // Added timestamp to prevent browser caching
+            const response = await fetch('/api/status?t=' + new Date().getTime());
+            if (!response.ok) throw new Error("API Error"); // Catch non-200 responses
+            const slots = await response.json();
+            const container = document.getElementById('parking-grid-container');
+            
+            let html = '';
+            for (const [id, s] of Object.entries(slots)) {
+                let statusClass = 'free';
+                let icon = '<i class="fas fa-parking"></i>';
+                let statusText = '<span style="color: #28a745; font-weight:bold;">Available</span>';
+                let timeHtml = '';
+
+                if (s.vehicle === 'RESERVED') {
+                    statusClass = 'reserved';
+                    icon = '<i class="fas fa-lock"></i>';
+                    statusText = 'LOCKED';
+                } else if (s.vehicle) {
+                    statusClass = 'occupied';
+                    statusText = `<span style="font-weight:bold;">${s.vehicle}</span>`;
+                    
+                    // Add Auto/Manual indicator
+                    if (s.is_auto) {
+                        statusText += '<div style="font-size:0.75em; color:#007bff; margin-top:2px;"><i class="fas fa-robot"></i> Auto-Parked</div>';
+                    } else {
+                        statusText += '<div style="font-size:0.75em; color:#666; margin-top:2px;"><i class="fas fa-user"></i> Manual</div>';
+                    }
+                    
+                    if (s.vehicle === 'AMBULANCE') icon = '<i class="fas fa-ambulance"></i>';
+                    else if (s.vehicle === 'VIP') icon = '<i class="fas fa-crown"></i>';
+                    else if (s.vehicle === 'EV') icon = '<i class="fas fa-bolt"></i>';
+                    else if (s.vehicle === 'SENIOR') icon = '<i class="fas fa-person-cane"></i>';
+                    else if (s.vehicle === 'NORMAL') icon = '<i class="fas fa-car-side"></i>';
+                } else if (s.robot_assigned) {
+                    // NEW: Visualize Robot Cache Lock / Incoming
+                    statusClass = 'robot-incoming'; 
+                    icon = '<i class="fas fa-robot" style="color: #007bff;"></i>';
+                    statusText = `<span style="color: #007bff;">Incoming R${s.robot_assigned}</span>`;
+                }
+
+                if (s.end_time) {
+                    // Simple time formatting
+                    const date = new Date(s.end_time);
+                    const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    timeHtml = `<div class="slot-time">Free at ${timeStr}</div>`;
+                } else {
+                    // Placeholder to keep card height consistent
+                    timeHtml = `<div class="slot-time" style="visibility:hidden;">-</div>`;
+                }
+
+                html += `
+                <div class="slot ${statusClass}">
+                    <div class="slot-header">
+                        <div class="slot-id">${s.id}</div>
+                        <span class="slot-type-badge">${s.type}</span>
+                    </div>
+                    <div class="slot-icon">${icon}</div>
+                    <div class="slot-status">${statusText}</div>
+                    ${timeHtml}
+                    <div style="font-size: 0.8em; color: #999; margin-top: 5px;">${s.attr}</div>
+                </div>`;
+            }
+            container.innerHTML = html;
+            updatePrediction(); // Also refresh AI stats
+        } catch (e) {
+            console.error("Grid update failed", e);
+        }
+    }
+
+    function getStateColor(state) {
+        if (state === 'IDLE') return '#999';
+        if (state === 'MOVING_TO_SLOT') return '#007bff';
+        if (state === 'PARKING') return '#28a745';
+        return '#e0a800';
+    }
+
+    function logSim(msg) {
+        const consoleDiv = document.getElementById('sim-logs');
+        const line = document.createElement('div');
+        line.className = 'log-entry';
+        line.innerText = `> ${msg}`;
+        
+        // Add new message to the top
+        consoleDiv.prepend(line);
+        
+        // Increased limit to 50 to allow scrolling through history
+        while (consoleDiv.children.length > 50) {
+            consoleDiv.removeChild(consoleDiv.lastChild);
+        }
+    }
+</script>
+
+</body>
+</html>
