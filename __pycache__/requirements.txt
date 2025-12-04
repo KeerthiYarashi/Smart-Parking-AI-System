@@ -1,0 +1,2 @@
+# This file is in the wrong location - delete it
+# The correct requirements.txt is in the project root

@@ -72,24 +72,37 @@ class PredictionEngine:
         now = datetime.now()
         
         free_count = 0
-        for s in slots_data.values():
-            if s['vehicle'] is None:
+        total_count = 0
+        
+        for slot_id, s in slots_data.items():
+            total_count += 1
+            
+            # Handle both dict access styles
+            vehicle = s.get('vehicle') if isinstance(s, dict) else getattr(s, 'vehicle', None)
+            end_time = s.get('end_time') if isinstance(s, dict) else getattr(s, 'end_time', None)
+            slot_id_val = s.get('id', slot_id) if isinstance(s, dict) else getattr(s, 'id', slot_id)
+            
+            if vehicle is None:
                 free_count += 1
-            elif s['end_time']:
+            elif end_time:
                 # Calculate remaining time
-                remaining_seconds = (s['end_time'] - now).total_seconds()
-                
-                if remaining_seconds > 0:
-                    hours = int(remaining_seconds // 3600)
-                    mins = int((remaining_seconds % 3600) // 60)
+                try:
+                    remaining_seconds = (end_time - now).total_seconds()
                     
-                    upcoming_availability.append({
-                        "slot": s['id'],
-                        "free_at": s['end_time'].strftime("%H:%M"),
-                        "hours_left": hours,
-                        "mins_left": mins,
-                        "total_seconds": remaining_seconds
-                    })
+                    if remaining_seconds > 0:
+                        hours = int(remaining_seconds // 3600)
+                        mins = int((remaining_seconds % 3600) // 60)
+                        
+                        upcoming_availability.append({
+                            "slot": slot_id_val,
+                            "free_at": end_time.strftime("%H:%M"),
+                            "hours_left": hours,
+                            "mins_left": mins,
+                            "total_seconds": remaining_seconds
+                        })
+                except Exception as e:
+                    print(f"Prediction time calc error: {e}")
+                    continue
         
         # Sort by soonest available
         upcoming_availability.sort(key=lambda x: x['total_seconds'])
@@ -102,23 +115,32 @@ class PredictionEngine:
         current_hour = datetime.now().hour
         is_peak = (8 <= current_hour <= 10) or (17 <= current_hour <= 19)
         
-        base_prob = 0.0
-        if effective_free > 2: base_prob = 0.9
-        elif effective_free > 0: base_prob = 0.4
-        else: base_prob = 0.05
+        # Calculate base probability
+        if total_count == 0:
+            base_prob = 0.5
+        elif effective_free > 2:
+            base_prob = 0.9
+        elif effective_free > 0:
+            base_prob = 0.4 + (effective_free * 0.2)
+        else:
+            base_prob = 0.05
         
         # Penalties
-        if is_peak: base_prob -= 0.2 # Harder to find spots in peak time
-        if queue_length > 0: base_prob -= (queue_length * 0.1)
+        if is_peak:
+            base_prob -= 0.2  # Harder to find spots in peak time
+        if queue_length > 0:
+            base_prob -= (queue_length * 0.1)
         
+        # Ensure probability is within bounds
         final_prob = max(0, min(int(base_prob * 100), 100))
 
         return {
             "probability": final_prob,
             "free_slots": free_count,
+            "total_slots": total_count,
             "queue_impact": queue_length,
             "is_peak": is_peak,
-            "upcoming": upcoming_availability[:4] # Top 4 soonest freeing slots
+            "upcoming": upcoming_availability[:4]  # Top 4 soonest freeing slots
         }
 
 class Vehicle:
@@ -172,11 +194,12 @@ class ParkingLot:
         self.state = "IDLE" # FSM State
 
         # Simulation Components
-        self.robots = [Robot(1), Robot(2), Robot(3)] # Updated: Added Robot 3
+        self.robots = [Robot(1), Robot(2), Robot(3)]
         self.waiting_queue = [] # FIFO Queue (Shift Register)
         self.vehicle_counter = 0
         self.traffic_mode = "MANUAL" # MANUAL, PEAK, EVENT
         self.auto_gen_count = 0 # Track total auto-generated vehicles
+        self.sim_vehicle_counter = 0  # NEW: Separate counter for simulation vehicles
         
         # Counters for dynamic priority assignment
         self.type_counters = {
@@ -187,6 +210,43 @@ class ParkingLot:
             "NORMAL": 0,
             "RESERVED": 0
         }
+
+    def reset_simulation(self):
+        """
+        Resets the simulation state - clears queue, resets counters, and resets robots.
+        Call this when starting a new simulation session.
+        """
+        # Clear the waiting queue
+        self.waiting_queue = []
+        
+        # Reset simulation-specific counters
+        self.sim_vehicle_counter = 0
+        self.auto_gen_count = 0
+        
+        # Reset type counters for priority calculation
+        self.type_counters = {
+            "AMBULANCE": 0,
+            "VIP": 0,
+            "EV": 0,
+            "SENIOR": 0,
+            "NORMAL": 0,
+            "RESERVED": 0
+        }
+        
+        # Reset all robots to IDLE state
+        for robot in self.robots:
+            robot.state = "IDLE"
+            robot.current_vehicle = None
+            robot.target_slot = None
+        
+        # Clear simulation log
+        self.sim_log = []
+        
+        # Log the reset
+        log_entry = f"[{datetime.now().strftime('%H:%M:%S')}] 🔄 SIMULATION RESET - All counters cleared"
+        self.sim_log.append(log_entry)
+        
+        return "Simulation reset successfully. Vehicle counter starts from 1."
 
     def set_traffic_mode(self, mode):
         self.traffic_mode = mode
@@ -244,8 +304,11 @@ class ParkingLot:
     def add_vehicle_to_queue(self, v_type, duration):
         """
         Adds a vehicle to the waiting queue (Shift Register Input)
+        Uses simulation-specific counter for vehicle IDs.
         """
-        self.vehicle_counter += 1
+        # Use simulation-specific counter instead of global counter
+        self.sim_vehicle_counter += 1
+        vehicle_id = self.sim_vehicle_counter  # Start from 1 for each simulation session
         
         # Increment type-specific counter for dynamic priority
         if v_type in self.type_counters:
@@ -253,20 +316,16 @@ class ParkingLot:
         else:
             self.type_counters[v_type] = 1
             
-        new_vehicle = Vehicle(self.vehicle_counter, v_type, duration)
+        new_vehicle = Vehicle(vehicle_id, v_type, duration)
         
         # DDCO Concept: Bus Arbitration / Priority Sorting
         # Base Priority from Encoder (Lower is better)
         base_priority = self.encoder.get_priority(v_type)
         
         # Dynamic Priority: Base + (Arrival Order * 0.01)
-        # This ensures VIP #1 (1.01) > VIP #2 (1.02) > Normal #1 (4.01)
-        # We use the type_counters to track arrival order per type
         arrival_order = self.type_counters.get(v_type, 0)
         final_priority = base_priority + (arrival_order * 0.01)
         
-        # Store this calculated priority on the vehicle object for reference if needed
-        # (Python allows dynamic attribute assignment)
         new_vehicle.dynamic_priority = final_priority
         
         inserted = False
@@ -281,12 +340,11 @@ class ParkingLot:
         if not inserted:
             self.waiting_queue.append(new_vehicle)
             
-        # Robot Logging
-        # Updated log to include Priority
-        log_entry = f"[{datetime.now().strftime('%H:%M:%S')}] QUEUE ADD: {v_type} #{arrival_order} | Priority: {final_priority:.2f} | Duration: {duration}h"
+        # Robot Logging - Updated to show simulation vehicle ID clearly
+        log_entry = f"[{datetime.now().strftime('%H:%M:%S')}] QUEUE ADD: {v_type} V#{vehicle_id} | Priority: {final_priority:.2f} | Duration: {duration}h"
         self.sim_log.append(log_entry)
 
-        return f"Vehicle {new_vehicle.id} ({v_type}) [Prio: {final_priority:.2f}] added."
+        return f"Vehicle #{vehicle_id} ({v_type}) [Prio: {final_priority:.2f}] added."
 
     def remove_last_vehicle(self):
         """
@@ -345,20 +403,21 @@ class ParkingLot:
                 slot_id = robot.target_slot
                 vehicle = robot.current_vehicle
                 
-                # Calculate Cost using ALU
-                cost = self.alu.calculate_upfront_cost(vehicle.type, vehicle.duration)
+                if vehicle and slot_id:
+                    # Calculate Cost using ALU
+                    cost = self.alu.calculate_upfront_cost(vehicle.type, vehicle.duration)
 
-                self.slots[slot_id]['vehicle'] = vehicle.type
-                self.slots[slot_id]['is_auto'] = True # Mark as Automated
-                self.slots[slot_id]['entry_time'] = datetime.now()
-                self.slots[slot_id]['end_time'] = datetime.now() + timedelta(hours=float(vehicle.duration))
-                self.slots[slot_id]['robot_assigned'] = None # Unlock
+                    self.slots[slot_id]['vehicle'] = vehicle.type
+                    self.slots[slot_id]['is_auto'] = True # Mark as Automated
+                    self.slots[slot_id]['entry_time'] = datetime.now()
+                    self.slots[slot_id]['end_time'] = datetime.now() + timedelta(hours=float(vehicle.duration))
+                    self.slots[slot_id]['robot_assigned'] = None # Unlock
+                    
+                    logs.append(f"✅ Robot {robot.id} parked Vehicle {vehicle.id} in Slot {slot_id}. 💳 Paid: ${cost}")
                 
                 robot.state = "RETURNING"
                 robot.current_vehicle = None
                 robot.target_slot = None
-                
-                logs.append(f"✅ Robot {robot.id} parked Vehicle {vehicle.id} in Slot {slot_id}. 💳 Paid: ${cost}")
 
             elif robot.state == "RETURNING":
                 # FSM Transition: RETURNING -> IDLE
@@ -372,10 +431,6 @@ class ParkingLot:
         
         for vehicle in self.waiting_queue:
             # Determine target robot based on Vehicle ID (Serial No)
-            # ID 1 -> Index 0 (Robot 1)
-            # ID 2 -> Index 1 (Robot 2)
-            # ID 3 -> Index 2 (Robot 3)
-            # ID 4 -> Index 0 (Robot 1)
             target_robot_index = (vehicle.id - 1) % len(self.robots)
             target_robot = self.robots[target_robot_index]
             
@@ -392,22 +447,18 @@ class ParkingLot:
                     
                     # Lock the slot
                     self.slots[slot_id]['robot_assigned'] = target_robot.id
-                    logs.append(f"🤖 Robot {target_robot.id} [Serial Match] picked up Vehicle {vehicle.id} ({vehicle.type}) -> Slot {slot_id}")
+                    logs.append(f"🤖 Robot {target_robot.id} picked up Vehicle {vehicle.id} ({vehicle.type}) -> Slot {slot_id}")
                     
                     vehicles_to_remove.append(vehicle)
                 else:
-                    # Log warning only if it's the first vehicle to avoid spam
-                    if vehicle == self.waiting_queue[0]:
-                        logs.append(f"⚠️ No slot for Vehicle {vehicle.id}. Waiting...")
-            
-            # If target robot is busy, this vehicle waits in queue.
-            # We continue loop to see if other vehicles match other idle robots?
-            # Yes, this allows out-of-order processing if R2 is free but R1 is busy with V1.
-            # V2 (mapped to R2) can be processed.
+                    # Log warning only once per step
+                    if vehicle == self.waiting_queue[0] and len(logs) == 0:
+                        logs.append(f"⚠️ No slot available for {vehicle.type}. Waiting...")
         
         # Remove assigned vehicles
         for v in vehicles_to_remove:
-            self.waiting_queue.remove(v)
+            if v in self.waiting_queue:
+                self.waiting_queue.remove(v)
 
         return {
             "logs": logs,
@@ -435,6 +486,15 @@ class ParkingLot:
         self.slots[slot_id]['end_time'] = datetime.now() + timedelta(hours=float(duration))
         
         return f"🔒 Slot {slot_id} LOCKED for {duration} hrs. 💳 Upfront Payment: ${cost} Received."
+
+    def extend_slot(self, slot_id, extra_hours):
+        """
+        Extends the end_time of a specific slot.
+        """
+        if slot_id in self.slots and self.slots[slot_id]['end_time']:
+            self.slots[slot_id]['end_time'] += timedelta(hours=float(extra_hours))
+            return True
+        return False
 
     def process_vehicle(self, vehicle_type, duration):
         priority = self.encoder.get_priority(vehicle_type)

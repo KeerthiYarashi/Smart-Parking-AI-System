@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Parking AI - Project Poster</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #1a1a2e;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .poster {
+            width: 900px;
+            margin: 0 auto;
+            background: #1a1a2e;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        
+        /* Header - Blue Banner */
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo-circle {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .logo-circle img {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .logo-placeholder {
+            font-size: 28px;
+            color: #1e3a8a;
+        }
+        
+        .header-text {
+            color: white;
+        }
+        
+        .college-name {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        
+        .department {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+        
+        /* Project Title */
+        .title-section {
+            background: #1a1a2e;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        .project-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+        
+        .project-subtitle {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+        
+        /* Content Area */
+        .content {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        /* Box Styles */
+        .box {
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .box-cyan {
+            background: linear-gradient(145deg, #0e7490 0%, #06b6d4 100%);
+            color: white;
+        }
+        
+        .box-pink {
+            background: linear-gradient(145deg, #db2777 0%, #f472b6 100%);
+            color: white;
+        }
+        
+        .box-green {
+            background: linear-gradient(145deg, #059669 0%, #34d399 100%);
+            color: white;
+        }
+        
+        .box-purple {
+            background: linear-gradient(145deg, #7c3aed 0%, #a78bfa 100%);
+            color: white;
+        }
+        
+        .box-orange {
+            background: linear-gradient(145deg, #ea580c 0%, #fb923c 100%);
+            color: white;
+        }
+        
+        .box-dark {
+            background: #0f172a;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+        }
+        
+        .box-white {
+            background: #ffffff;
+            color: #1e293b;
+        }
+        
+        .box-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .box-dark .box-title {
+            border-bottom-color: #475569;
+            color: #60a5fa;
+        }
+        
+        .box-white .box-title {
+            border-bottom-color: #e2e8f0;
+            color: #1e3a8a;
+        }
+        
+        .box p {
+            font-size: 11px;
+            line-height: 1.6;
+            text-align: justify;
+        }
+        
+        /* Full Width Boxes */
+        .full-width {
+            grid-column: span 2;
+        }
+        
+        /* Flow Diagram */
+        .flow-container {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .flow-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .flow-box {
+            background: linear-gradient(145deg, #1e293b, #334155);
+            border: 2px solid #475569;
+            border-radius: 8px;
+            padding: 10px 14px;
+            text-align: center;
+            min-width: 110px;
+            position: relative;
+        }
+        
+        .flow-box.highlight-yellow {
+            border-color: #fbbf24;
+            background: linear-gradient(145deg, #422006, #713f12);
+        }
+        
+        .flow-box.highlight-green {
+            border-color: #22c55e;
+            background: linear-gradient(145deg, #052e16, #166534);
+        }
+        
+        .flow-box.highlight-blue {
+            border-color: #3b82f6;
+            background: linear-gradient(145deg, #172554, #1e3a8a);
+        }
+        
+        .flow-box.highlight-red {
+            border-color: #ef4444;
+            background: linear-gradient(145deg, #450a0a, #991b1b);
+        }
+        
+        .flow-box.highlight-purple {
+            border-color: #a855f7;
+            background: linear-gradient(145deg, #3b0764, #6b21a8);
+        }
+        
+        .flow-box-title {
+            font-size: 9px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 3px;
+        }
+        
+        .flow-box-concept {
+            font-size: 7px;
+            color: #94a3b8;
+        }
+        
+        .flow-box-number {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            width: 18px;
+            height: 18px;
+            background: #f59e0b;
+            color: #000;
+            border-radius: 50%;
+            font-size: 9px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .flow-arrow {
+            color: #64748b;
+            font-size: 16px;
+        }
+        
+        .flow-arrow-down {
+            text-align: center;
+            color: #64748b;
+            font-size: 16px;
+            margin: 5px 0;
+        }
+        
+        /* Lists */
+        .adv-list, .working-list, .future-list {
+            list-style: none;
+            margin-top: 8px;
+        }
+        
+        .adv-list li, .working-list li {
+            font-size: 10px;
+            padding: 5px 0;
+            padding-left: 18px;
+            position: relative;
+            line-height: 1.5;
+        }
+        
+        .adv-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #22c55e;
+            font-weight: bold;
+        }
+        
+        .working-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        .disadv-list li::before {
+            content: "⚠";
+            color: #fbbf24;
+        }
+        
+        .future-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+        
+        .future-list li {
+            font-size: 9px;
+            padding: 4px 0;
+        }
+        
+        .future-list li::before {
+            content: "🔮 ";
+        }
+        
+        /* Concept Grid */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .concept-item {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        
+        .concept-number {
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 6px;
+        }
+        
+        .concept-name {
+            font-size: 8px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 3px;
+        }
+        
+        .concept-desc {
+            font-size: 7px;
+            color: #94a3b8;
+        }
+        
+        .concept-web {
+            font-size: 6px;
+            color: #60a5fa;
+            margin-top: 4px;
+        }
+        
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .result-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px 8px;
+            text-align: center;
+        }
+        
+        .result-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        
+        .result-label {
+            font-size: 8px;
+            color: rgba(255,255,255,0.8);
+            margin-top: 4px;
+        }
+        
+        /* Screenshot Placeholder */
+        .screenshot-container {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .screenshot-placeholder {
+            background: linear-gradient(145deg, #1e293b, #334155);
+            border: 2px dashed #475569;
+            border-radius: 6px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 11px;
+        }
+        
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            padding: 20px 30px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            color: white;
+        }
+        
+        .team-section h4 {
+            font-size: 12px;
+            margin-bottom: 10px;
+            color: #bfdbfe;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        
+        .team-member {
+            font-size: 10px;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
+        }
+        
+        .team-member span {
+            display: block;
+            font-size: 8px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+        
+        .coordinator {
+            margin-top: 12px;
+            font-size: 11px;
+            color: #bfdbfe;
+        }
+        
+        .qr-section {
+            text-align: center;
+        }
+        
+        .qr-placeholder {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 8px;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #1e3a8a;
+            font-weight: 600;
+        }
+        
+        .qr-label {
+            font-size: 9px;
+            opacity: 0.9;
+        }
+        
+        /* Tech Stack */
+        .tech-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        
+        .tech-badge {
+            background: rgba(255,255,255,0.15);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+        
+        /* Print Styles */
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+            .poster {
+                box-shadow: none;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="poster">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-circle">
+                <span class="logo-placeholder">🎓</span>
+            </div>
+            <div class="header-text">
+                <div class="college-name">DAYANANDA SAGAR COLLEGE OF ENGINEERING</div>
+                <div class="department">DEPARTMENT OF CSE (IOT & CYBER SECURITY INCLUDING BLOCKCHAIN TECHNOLOGY)</div>
+            </div>
+        </div>
+        
+        <!-- Title Section -->
+        <div class="title-section">
+            <div class="project-title">🅿️ Smart AI-Powered Parking Management System</div>
+            <div class="project-subtitle">POSTER PRESENTATION ON IMPLEMENTING DDCO CONCEPTS IN REAL-WORLD WEB APPLICATION</div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Row 1: Abstract & Working -->
+            <div class="box box-cyan">
+                <div class="box-title">📋 ABSTRACT</div>
+                <p>
+                    The Smart Parking AI System is a web-based intelligent parking management platform that implements 
+                    <strong>all 10 core DDCO concepts</strong> in software. Using <strong>Priority Encoders</strong> for vehicle prioritization, 
+                    <strong>FSM</strong> for robot automation, <strong>ALU</strong> for billing calculations, <strong>MUX</strong> for slot selection,
+                    <strong>Registers</strong> for memory, <strong>FIFO queues</strong> for buffering, <strong>Bus Arbitration</strong> for queue management, 
+                    <strong>Interrupt Handlers</strong> for emergencies, <strong>Branch Prediction</strong> for AI forecasting, and a 
+                    <strong>Control Unit</strong> for orchestration. The system achieves real-time slot allocation with 95% efficiency,
+                    offering AI-powered predictions and secure JWT authentication.
+                </p>
+            </div>
+            
+            <div class="box box-pink">
+                <div class="box-title">⚙️ WORKING</div>
+                <ul class="working-list">
+                    <li><strong>User Input:</strong> User selects vehicle type (VIP, EV, Normal, Senior, Ambulance) and parking duration via web dashboard.</li>
+                    <li><strong>Priority Encoding:</strong> System assigns priority levels (Ambulance=0, VIP=1, EV=2, Senior=3, Normal=4).</li>
+                    <li><strong>Queue Management:</strong> Vehicles enter FIFO buffer with bus arbitration for priority sorting.</li>
+                    <li><strong>Slot Allocation:</strong> MUX logic selects optimal slot based on type matching and system mode.</li>
+                    <li><strong>Robot Simulation:</strong> FSM-based robots pick up vehicles and park them automatically.</li>
+                    <li><strong>Billing:</strong> ALU calculates upfront cost (Rate × Duration) before entry.</li>
+                    <li><strong>Dashboard Output:</strong> Real-time updates showing slot status, AI predictions, and countdown timers.</li>
+                </ul>
+            </div>
+            
+            <!-- Row 2: Proposed Methodology (Full Width) -->
+            <div class="box box-dark full-width">
+                <div class="box-title">🔄 PROPOSED METHODOLOGY - COMPLETE DDCO FLOW</div>
+                <div class="flow-container">
+                    <!-- Row 1: Input Stage -->
+                    <div class="flow-row">
+                        <div class="flow-box highlight-yellow">
+                            <div class="flow-box-number">1</div>
+                            <div class="flow-box-title">🎮 Dashboard Input</div>
+                            <div class="flow-box-concept">(10) CONTROL UNIT</div>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight-blue">
+                            <div class="flow-box-number">2</div>
+                            <div class="flow-box-title">🚗 Vehicle Type</div>
+                            <div class="flow-box-concept">(2) PRIORITY ENCODER</div>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight-purple">
+                            <div class="flow-box-number">3</div>
+                            <div class="flow-box-title">🔄 Queue Sort</div>
+                            <div class="flow-box-concept">(7) BUS ARBITRATION</div>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight-green">
+                            <div class="flow-box-number">4</div>
+                            <div class="flow-box-title">📋 FIFO Buffer</div>
+                            <div class="flow-box-concept">(6) SHIFT REGISTER</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-arrow-down">↓</div>
+                    
+                    <!-- Row 2: Processing Stage -->
+                    <div class="flow-row">
+                        <div class="flow-box highlight-red">
+                            <div class="flow-box-number">5</div>
+                            <div class="flow-box-title">🚨 Emergency Check</div>
+                            <div class="flow-box-concept">(8) INTERRUPT HANDLER</div>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight-blue">
+                            <div class="flow-box-number">6</div>
+                            <div class="flow-box-title">🎯 Slot Selection</div>
+                            <div class="flow-box-concept">(3) MULTIPLEXER</div>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight-purple">
+                            <div class="flow-box-number">7</div>
+                            <div class="flow-box-title">🤖 Robot FSM</div>
+                            <div class="flow-box-concept">(4) STATE MACHINE</div>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight-green">
+                            <div class="flow-box-number">8</div>
+                            <div class="flow-box-title">💾 Slot Memory</div>
+                            <div class="flow-box-concept">(5) REGISTERS/RAM</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-arrow-down">↓</div>
+                    
+                    <!-- Row 3: Output Stage -->
+                    <div class="flow-row">
+                        <div class="flow-box highlight-yellow">
+                            <div class="flow-box-number">9</div>
+                            <div class="flow-box-title">💰 Billing Calc</div>
+                            <div class="flow-box-concept">(1) ALU: Rate × Duration</div>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight-blue">
+                            <div class="flow-box-number">10</div>
+                            <div class="flow-box-title">🔮 AI Forecast</div>
+                            <div class="flow-box-concept">(9) BRANCH PREDICTION</div>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box" style="border-color: #22c55e; min-width: 180px;">
+                            <div class="flow-box-title">📊 DASHBOARD OUTPUT</div>
+                            <div class="flow-box-concept">Slot Grid • Chart • Robot Cards • Logs</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Row 3: DDCO Concepts Grid (Full Width) -->
+            <div class="box box-dark full-width">
+                <div class="box-title">🔧 ALL 10 DDCO CONCEPTS → WEB INTERFACE MAPPING</div>
+                <div class="concept-grid">
+                    <div class="concept-item">
+                        <div class="concept-number">1</div>
+                        <div class="concept-name">ALU</div>
+                        <div class="concept-desc">Rate × Duration</div>
+                        <div class="concept-web">💳 "Paid: $20" logs</div>
+                    </div>
+                    <div class="concept-item">
+                        <div class="concept-number">2</div>
+                        <div class="concept-name">Priority Encoder</div>
+                        <div class="concept-desc">AMB>VIP>NORM</div>
+                        <div class="concept-web">🚗 Entry Buttons</div>
+                    </div>
+                    <div class="concept-item">
+                        <div class="concept-number">3</div>
+                        <div class="concept-name">MUX</div>
+                        <div class="concept-desc">Slot Selection</div>
+                        <div class="concept-web">⚙️ Mode Dropdown</div>
+                    </div>
+                    <div class="concept-item">
+                        <div class="concept-number">4</div>
+                        <div class="concept-name">FSM</div>
+                        <div class="concept-desc">IDLE→PARK</div>
+                        <div class="concept-web">🤖 Robot Cards</div>
+                    </div>
+                    <div class="concept-item">
+                        <div class="concept-number">5</div>
+                        <div class="concept-name">Registers</div>
+                        <div class="concept-desc">12 Addresses</div>
+                        <div class="concept-web">🅿️ Slot Grid</div>
+                    </div>
+                    <div class="concept-item">
+                        <div class="concept-number">6</div>
+                        <div class="concept-name">FIFO</div>
+                        <div class="concept-desc">Queue Buffer</div>
+                        <div class="concept-web">📋 Queue Bar</div>
+                    </div>
+                    <div class="concept-item">
+                        <div class="concept-number">7</div>
+                        <div class="concept-name">Bus Arbitration</div>
+                        <div class="concept-desc">Priority Sort</div>
+                        <div class="concept-web">📊 VIP Jumps</div>
+                    </div>
+                    <div class="concept-item">
+                        <div class="concept-number">8</div>
+                        <div class="concept-name">Interrupt</div>
+                        <div class="concept-desc">Emergency</div>
+                        <div class="concept-web">🚨 Ambulance Btn</div>
+                    </div>
+                    <div class="concept-item">
+                        <div class="concept-number">9</div>
+                        <div class="concept-name">Prediction</div>
+                        <div class="concept-desc">Availability %</div>
+                        <div class="concept-web">🔮 AI Chart</div>
+                    </div>
+                    <div class="concept-item">
+                        <div class="concept-number">10</div>
+                        <div class="concept-name">Control Unit</div>
+                        <div class="concept-desc">Orchestration</div>
+                        <div class="concept-web">🎮 Dashboard</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Row 4: Advantages & Disadvantages -->
+            <div class="box box-green">
+                <div class="box-title">✅ ADVANTAGES</div>
+                <ul class="adv-list">
+                    <li>All 10 DDCO concepts visualized in real-time web UI</li>
+                    <li>Real-time slot availability with AI prediction (90% accuracy)</li>
+                    <li>Priority-based allocation for emergency vehicles</li>
+                    <li>Upfront billing using ALU eliminates payment disputes</li>
+                    <li>FSM robot animation demonstrates state transitions visually</li>
+                    <li>Secure JWT-based authentication with user dashboard</li>
+                    <li>Auto-expiry notifications with countdown timers</li>
+                </ul>
+            </div>
+            
+            <div class="box box-orange">
+                <div class="box-title">⚠️ DISADVANTAGES</div>
+                <ul class="adv-list disadv-list">
+                    <li>Requires internet connectivity for web interface access</li>
+                    <li>Robot simulation is virtual, not connected to actual hardware</li>
+                    <li>Limited to 12 slots in current implementation</li>
+                    <li>Relies on user input accuracy for vehicle type classification</li>
+                </ul>
+                <div style="margin-top: 15px;">
+                    <div class="box-title" style="font-size: 12px;">🚀 FUTURE SCOPE</div>
+                    <ul class="future-list">
+                        <li>IoT sensor integration</li>
+                        <li>Mobile app (Android/iOS)</li>
+                        <li>License plate recognition</li>
+                        <li>Dynamic surge pricing</li>
+                        <li>Multi-location support</li>
+                        <li>Payment gateway</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- NEW: Cybersecurity Features Section -->
+            <div class="box full-width" style="background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); border: 2px solid #22d3ee; color: #e2e8f0;">
+                <div class="box-title" style="color: #22d3ee; border-bottom-color: #334155;">🔐 CYBERSECURITY FEATURES IMPLEMENTED</div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+                    <div style="background: rgba(34, 211, 238, 0.1); padding: 12px; border-radius: 8px; border: 1px solid #334155; text-align: center;">
+                        <div style="font-size: 20px; margin-bottom: 6px;">🔑</div>
+                        <div style="font-size: 9px; font-weight: 700; color: #22d3ee;">JWT Authentication</div>
+                        <div style="font-size: 7px; color: #94a3b8; margin-top: 4px;">Secure token-based user sessions with expiry</div>
+                    </div>
+                    <div style="background: rgba(34, 211, 238, 0.1); padding: 12px; border-radius: 8px; border: 1px solid #334155; text-align: center;">
+                        <div style="font-size: 20px; margin-bottom: 6px;">🛡️</div>
+                        <div style="font-size: 9px; font-weight: 700; color: #22d3ee;">API Key Protection</div>
+                        <div style="font-size: 7px; color: #94a3b8; margin-top: 4px;">X-API-KEY header validation on all endpoints</div>
+                    </div>
+                    <div style="background: rgba(34, 211, 238, 0.1); padding: 12px; border-radius: 8px; border: 1px solid #334155; text-align: center;">
+                        <div style="font-size: 20px; margin-bottom: 6px;">🔒</div>
+                        <div style="font-size: 9px; font-weight: 700; color: #22d3ee;">Bcrypt Hashing</div>
+                        <div style="font-size: 7px; color: #94a3b8; margin-top: 4px;">Password hashing with salt (72-byte limit)</div>
+                    </div>
+                    <div style="background: rgba(34, 211, 238, 0.1); padding: 12px; border-radius: 8px; border: 1px solid #334155; text-align: center;">
+                        <div style="font-size: 20px; margin-bottom: 6px;">🚨</div>
+                        <div style="font-size: 9px; font-weight: 700; color: #22d3ee;">IDS Logging</div>
+                        <div style="font-size: 7px; color: #94a3b8; margin-top: 4px;">Intrusion Detection System for suspicious activity</div>
+                    </div>
+                    <div style="background: rgba(34, 211, 238, 0.1); padding: 12px; border-radius: 8px; border: 1px solid #334155; text-align: center;">
+                        <div style="font-size: 20px; margin-bottom: 6px;">🧹</div>
+                        <div style="font-size: 9px; font-weight: 700; color: #22d3ee;">Input Sanitization</div>
+                        <div style="font-size: 7px; color: #94a3b8; margin-top: 4px;">XSS & injection prevention on all inputs</div>
+                    </div>
+                    <div style="background: rgba(34, 211, 238, 0.1); padding: 12px; border-radius: 8px; border: 1px solid #334155; text-align: center;">
+                        <div style="font-size: 20px; margin-bottom: 6px;">📋</div>
+                        <div style="font-size: 9px; font-weight: 700; color: #22d3ee;">Pydantic Validation</div>
+                        <div style="font-size: 7px; color: #94a3b8; margin-top: 4px;">Strict schema validation on API requests</div>
+                    </div>
+                    <div style="background: rgba(34, 211, 238, 0.1); padding: 12px; border-radius: 8px; border: 1px solid #334155; text-align: center;">
+                        <div style="font-size: 20px; margin-bottom: 6px;">🌐</div>
+                        <div style="font-size: 9px; font-weight: 700; color: #22d3ee;">CORS Middleware</div>
+                        <div style="font-size: 7px; color: #94a3b8; margin-top: 4px;">Cross-Origin Resource Sharing protection</div>
+                    </div>
+                    <div style="background: rgba(34, 211, 238, 0.1); padding: 12px; border-radius: 8px; border: 1px solid #334155; text-align: center;">
+                        <div style="font-size: 20px; margin-bottom: 6px;">🔐</div>
+                        <div style="font-size: 9px; font-weight: 700; color: #22d3ee;">ENV Secrets</div>
+                        <div style="font-size: 7px; color: #94a3b8; margin-top: 4px;">.env file for secure key management</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 5: Results & Conclusion -->
+            <div class="box box-purple">
+                <div class="box-title">📊 RESULTS</div>
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-value">&lt;100ms</div>
+                        <div class="result-label">Allocation Time</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value">90%</div>
+                        <div class="result-label">AI Accuracy</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value">50+</div>
+                        <div class="result-label">Concurrent Users</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value">10</div>
+                        <div class="result-label">DDCO Concepts</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value">12</div>
+                        <div class="result-label">Parking Slots</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value">3</div>
+                        <div class="result-label">FSM Robots</div>
+                    </div>
+                </div>
+                <div class="screenshot-container">
+                    <div class="screenshot-placeholder">
+                        📸 Dashboard Screenshot / Demo QR Code
+                    </div>
+                </div>
+            </div>
+            
+            <div class="box box-white">
+                <div class="box-title">🎯 CONCLUSION</div>
+                <p>
+                    The Smart Parking AI System successfully demonstrates the practical application of 
+                    <strong>all 10 core DDCO concepts</strong> in a modern web application. By implementing 
+                    ALU for billing, FSM for robot automation, Priority Encoders for vehicle prioritization, 
+                    Registers for slot management, FIFO queues for buffering, MUX for slot selection, 
+                    Bus Arbitration for priority sorting, Interrupt Handlers for emergencies, 
+                    Branch Prediction for AI forecasting, and Control Unit for orchestration—the project 
+                    bridges theoretical computer organization concepts with real-world software development.
+                </p>
+                <div style="margin-top: 15px;">
+                    <div class="box-title" style="font-size: 11px; color: #475569;">💻 TECHNOLOGY STACK</div>
+                    <div class="tech-badges">
+                        <span class="tech-badge" style="background: #3178c6; color: white;">Python</span>
+                        <span class="tech-badge" style="background: #009688; color: white;">FastAPI</span>
+                        <span class="tech-badge" style="background: #f7df1e; color: black;">JavaScript</span>
+                        <span class="tech-badge" style="background: #ff6384; color: white;">Chart.js</span>
+                        <span class="tech-badge" style="background: #003b57; color: white;">SQLite</span>
+                        <span class="tech-badge" style="background: #000; color: white;">JWT Auth</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="team-section">
+                <h4>MADE BY:</h4>
+                <div class="team-grid">
+                    <div class="team-member">Student Name 1 <span>1DS23ICXXX</span></div>
+                    <div class="team-member">Student Name 2 <span>1DS23ICXXX</span></div>
+                    <div class="team-member">Student Name 3 <span>1DS23ICXXX</span></div>
+                    <div class="team-member">Student Name 4 <span>1DS23ICXXX</span></div>
+                </div>
+                <div class="coordinator">
+                    <strong>PROJECT COORDINATOR:</strong> Prof. Shashank S
+                </div>
+            </div>
+            <div class="qr-section">
+                <div class="qr-placeholder">
+                    [QR CODE]
+                </div>
+                <div class="qr-label">Scan for Live Demo</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

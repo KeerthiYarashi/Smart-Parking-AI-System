@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Profile - Smart Parking AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: var(--primary-bg);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .top-bar {
+            background: var(--glass-bg);
+            padding: 15px 30px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 1200px;
+            margin: 0 auto 20px auto;
+        }
+
+        .top-bar h2 {
+            color: #1e3c72;
+            font-size: 1.5em;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-home {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-logout {
+            background: #dc3545;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        @media (min-width: 900px) {
+            .container {
+                grid-template-columns: 1fr 2fr;
+            }
+        }
+
+        .panel {
+            background: var(--glass-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3em;
+            font-weight: bold;
+            margin: 0 auto 15px;
+        }
+
+        .profile-name {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .profile-email {
+            color: #666;
+            font-size: 1em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 800;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-completed {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-expired {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .notif-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <h2><i class="fas fa-user-circle"></i> My Profile</h2>
+        <div class="nav-buttons">
+            <button class="btn btn-home" onclick="window.location.href='/'">
+                <i class="fas fa-home"></i> Back to Parking
+            </button>
+            <button class="btn btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Left Panel: Profile Info -->
+        <div class="panel">
+            <div class="profile-header">
+                <div class="avatar" id="avatar">?</div>
+                <div class="profile-name" id="profile-name">Loading...</div>
+                <div class="profile-email" id="profile-email"></div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-bookings">0</div>
+                    <div class="stat-label">Total Bookings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="active-bookings">0</div>
+                    <div class="stat-label">Active Now</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-spent">$0</div>
+                    <div class="stat-label">Total Spent</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="member-days">0</div>
+                    <div class="stat-label">Days as Member</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Activity -->
+        <div class="panel">
+            <div class="section-title">
+                <i class="fas fa-history"></i> Recent Bookings
+            </div>
+            <table id="bookings-table">
+                <thead>
+                    <tr>
+                        <th>Slot</th>
+                        <th>Type</th>
+                        <th>Entry Time</th>
+                        <th>Duration</th>
+                        <th>Cost</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="6" style="text-align: center;">Loading...</td></tr>
+                </tbody>
+            </table>
+
+            <div class="section-title" style="margin-top: 30px;">
+                <i class="fas fa-bell"></i> Notifications
+            </div>
+            <div id="notifications-list">
+                <p style="color: #999;">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('access_token');
+
+        if (!token) {
+            alert('Please login first');
+            window.location.href = '/login';
+        }
+
+        async function fetchWithAuth(url) {
+            const response = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Auth failed');
+            return response.json();
+        }
+
+        async function loadProfile() {
+            try {
+                const user = await fetchWithAuth('/user/me');
+                const bookings = await fetchWithAuth('/user/bookings');
+                const notifications = await fetchWithAuth('/user/notifications');
+
+                // Update profile info
+                const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                document.getElementById('avatar').innerText = initials;
+                document.getElementById('profile-name').innerText = user.name;
+                document.getElementById('profile-email').innerText = user.email;
+
+                // Calculate stats
+                const activeCount = bookings.filter(b => b.status === 'ACTIVE').length;
+                const totalSpent = bookings.reduce((sum, b) => sum + b.billing_cost, 0);
+                const memberSince = new Date(user.created_at);
+                const daysSince = Math.floor((new Date() - memberSince) / (1000 * 60 * 60 * 24));
+
+                document.getElementById('total-bookings').innerText = bookings.length;
+                document.getElementById('active-bookings').innerText = activeCount;
+                document.getElementById('total-spent').innerText = `$${totalSpent.toFixed(2)}`;
+                document.getElementById('member-days').innerText = daysSince;
+
+                // Update bookings table
+                const tbody = document.querySelector('#bookings-table tbody');
+                if (bookings.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No bookings yet. <a href="/">Start parking!</a></td></tr>';
+                } else {
+                    tbody.innerHTML = bookings.slice(0, 10).map(b => `
+                        <tr>
+                            <td>${b.slot_id}</td>
+                            <td>${b.vehicle_type}</td>
+                            <td>${new Date(b.entry_time).toLocaleString()}</td>
+                            <td>${b.duration_hours}h</td>
+                            <td>$${b.billing_cost}</td>
+                            <td><span class="status-badge status-${b.status.toLowerCase()}">${b.status}</span></td>
+                        </tr>
+                    `).join('');
+                }
+
+                // Update notifications
+                const notifDiv = document.getElementById('notifications-list');
+                if (notifications.length === 0) {
+                    notifDiv.innerHTML = '<p style="color: #999;">No notifications</p>';
+                } else {
+                    notifDiv.innerHTML = notifications.slice(0, 5).map(n => `
+                        <div class="notif-item">
+                            <div style="font-weight: ${n.is_read ? 'normal' : 'bold'};">
+                                ${n.message}
+                            </div>
+                            <div style="font-size: 0.85em; color: #999; margin-top: 5px;">
+                                ${new Date(n.timestamp).toLocaleString()}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert('Session expired. Please login again.');
+                logout();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        loadProfile();
+    </script>
+</body>
+</html>

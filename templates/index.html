@@ -2,109 +2,193 @@
 <html>
 <head>
     <title>Smart Parking AI - DDCO Project</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- Chart.js for Data Visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            /* Modern Palette based on prompt */
-            --primary-bg: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.5);
-            --text-color: #2c3e50;
-            --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            /* Option 1: Modern Blue + White Palette */
+            --primary-bg: #0F3D79;
+            --glass-bg: #FFFFFF;
+            --text-main: #1A1A1A;
+            --text-secondary: #4A5568;
+            --accent-blue: #3B82F6;
             
             /* Accent Colors */
-            --color-vip: #ffd700;
-            --color-ev: #00c6ff;
-            --color-amb: #ff416c;
-            --color-senior: #11998e;
-            --color-normal: #6c757d;
-            --color-reserved: #8e44ad;
+            --color-vip: #FEC84B;
+            --color-ev: #32D583;
+            --color-amb: #F97066;
+            --color-senior: #3B82F6;
+            --color-normal: #64748B;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* FORCE RESET ZOOM/SCALE */
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--primary-bg);
-            min-height: 100vh;
-            padding: 20px;
-            color: var(--text-color);
-            background-attachment: fixed;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            /* Recommended Gradient */
+            background: linear-gradient(160deg, #1E3A8A 0%, #1E40AF 100%);
+            color: #F1F5F9; /* Light text for body/headers */
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            font-size: 18px;
+            zoom: 1.25;
         }
 
+        /* Restore dark text for white containers */
+        .glass-panel, .stat-box, .feature-card, .slot, .sim-controls, .robot-card, #user-nav, .search-input {
+            color: var(--text-main);
+            background: var(--glass-bg);
+        }
+
+        /* TASK 1: Fix Zooming on iOS */
+        input, select, textarea {
+            font-size: 16px !important; 
+        }
+
+        /* TASK 7: Clean Container Widths - RESPONSIVE FIX */
         .container {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 24px;
-            padding: 40px;
-            max-width: 1400px;
-            width: 95%;
+            max-width: 95%; /* Use 95% of screen width */
+            width: 100%;
             margin: 0 auto;
-            box-shadow: var(--card-shadow);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        @media (min-width: 1400px) {
+            .container {
+                max-width: 95%; /* Keep wide on large screens */
+            }
         }
 
-        /* Header Improvements */
-        .header { text-align: center; margin-bottom: 50px; }
-        .header h2 { 
-            font-size: clamp(2rem, 5vw, 3rem); 
-            background: linear-gradient(45deg, #1e3c72, #2a5298);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* Header */
+        .header {
+            text-align: center;
+            margin: 40px 0 60px;
+        }
+        .header h2 {
+            font-family: "Segoe UI Semibold", system-ui, sans-serif;
+            font-size: clamp(2.1rem, 5vw, 3.1rem);
+            color: #F1F5F9; /* Explicitly set title color */
+            background: none;
+            -webkit-text-fill-color: initial;
             margin-bottom: 10px;
             font-weight: 800;
-            letter-spacing: -1px;
+            letter-spacing: -0.04em;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
-        .header p { 
-            color: #555; 
-            font-size: 1.1em; 
-            font-weight: 500;
+        .header p {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #555;
+            font-size: 0.95rem;
+            font-weight: 600;
             background: rgba(255,255,255,0.5);
             display: inline-block;
             padding: 5px 15px;
             border-radius: 20px;
         }
 
-        /* Glass Panel Refinement */
+        /* UPDATED: Glass Panel Refinement → Premium Card Style */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.6);
-            padding: 30px;
-            border-radius: 24px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: var(--glass-border);
-            backdrop-filter: blur(5px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: #FFFFFF;
+            padding: 32px;
+            border-radius: 18px; /* Rounded corners */
+            box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.08); /* Soft shadow */
+            border: none; /* Remove border for cleaner look */
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             height: 100%;
             display: flex;
             flex-direction: column;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, transparent 0%, rgba(79, 172, 254, 0.12) 100%);
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 0;
         }
         
         .glass-panel:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.12),
+                0 8px 16px rgba(79, 172, 254, 0.15);
+        }
+
+        .glass-panel:hover::before {
+            opacity: 1;
+        }
+
+        /* Ensure content is above the ::before overlay */
+        .glass-panel > * {
+            position: relative;
+            z-index: 1;
         }
 
         .section-title {
-            font-size: 1.2em;
-            color: #444;
-            margin-bottom: 20px;
+            font-family: "Segoe UI Semibold", system-ui, sans-serif;
+            font-size: 1.15rem;
+            color: var(--text-main); /* Dark text inside panels */
+            margin-bottom: 22px;
             display: flex;
             align-items: center;
             gap: 10px;
             font-weight: 700;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 12px;
+            letter-spacing: 0.01em;
+            text-transform: uppercase;
+        }
+        
+        .section-title i {
+            color: var(--accent-blue); /* Vivid icons */
+            font-size: 1.2em;
         }
 
-        /* Center Panel Buttons */
+        /* New helper class: perfectly center section titles */
+        .section-title-center {
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* Slightly larger variant for major sections (optional) */
+        .section-title-lg {
+            font-size: 1.2rem;
+        }
+
+        /* Center Panel Buttons - IMPROVED LAYOUT & TEXT SIZE */
         .btn-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr); 
-            gap: 15px;
+            gap: 20px; /* Increased gap */
+            margin-top: 20px;
         }
         .btn-grid button:first-child { grid-column: span 2; } 
 
@@ -114,39 +198,69 @@
         }
 
         button {
-            padding: 15px;
+            padding: 25px; /* Larger padding */
             border: none;
-            border-radius: 16px;
+            border-radius: 18px; /* Softer corners */
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            font-size: 0.95em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            gap: 12px; /* More space between icon and text */
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            font-size: 1.25rem; /* Larger font size for readability */
+            letter-spacing: 0.03em;
+            min-height: 120px; /* Taller buttons */
+            width: 100%; 
+        }
+        
+        button i {
+            font-size: 2.2rem; /* Larger icons */
+            margin-bottom: 5px;
         }
         
         button:hover { 
-            transform: translateY(-3px) scale(1.02); 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2); 
-            filter: brightness(1.1);
+            transform: translateY(-4px) scale(1.03); 
+            box-shadow: 0 12px 28px rgba(0,0,0,0.15); 
+            filter: brightness(1.08);
         }
         
         button:active { transform: translateY(1px); }
 
-        /* Specific Button Colors */
-        .btn-vip { background: linear-gradient(135deg, #FFD700, #FDB931); color: #4a3b00; }
-        .btn-ev { background: linear-gradient(135deg, #00c6ff, #0072ff); }
-        .btn-amb { background: linear-gradient(135deg, #ff416c, #ff4b2b); animation: pulse 2s infinite; }
-        .btn-senior { background: linear-gradient(135deg, #11998e, #38ef7d); }
-        .btn-normal { background: linear-gradient(135deg, #6c757d, #495057); }
-        .btn-reserve { background: linear-gradient(135deg, #8e44ad, #c0392b); }
+        /* Softer, premium gradient buttons */
+        .btn-vip {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); /* Stronger Gold */
+            color: white;
+        }
+
+        .btn-ev {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%); /* Stronger Green */
+            color: white;
+        }
+
+        .btn-amb {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); /* Stronger Red */
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .btn-senior {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); /* Stronger Blue */
+            color: white;
+        }
+
+        .btn-normal {
+            background: linear-gradient(135deg, #64748B 0%, #475569 100%); /* Slate */
+            color: white;
+        }
+
+        .btn-reserve {
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); /* Purple */
+            color: white;
+        }
 
         /* Search Bar */
         .search-container {
@@ -162,6 +276,7 @@
             transition: all 0.3s;
             background: white;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
         }
         .search-input:focus {
             border-color: #2a5298;
@@ -185,18 +300,20 @@
         }
 
         .slot {
-            background: white;
-            padding: 25px;
-            border-radius: 24px;
+            background: #FFFFFF;
+            padding: 30px;
+            border-radius: 18px;
             text-align: center;
             border: 2px solid transparent;
             position: relative;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.05);
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 220px;
+            min-height: 240px;
+            font-size: 1.05em;
+            color: var(--text-main);
         }
 
         .slot:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
@@ -229,21 +346,22 @@
             align-items: center;
             min-height: 60px;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+            font-family: "Consolas", "SF Mono", Menlo, Monaco, monospace;
         }
         
         .log-console {
-            background: #1a1a1a;
-            color: #00ff00;
-            font-family: 'Consolas', monospace;
-            padding: 15px;
-            border-radius: 16px;
+            background: linear-gradient(145deg, #1f2937 0%, #111827 100%);
+            color: #10b981;
+            font-family: "Consolas", monospace;
+            padding: 16px;
+            border-radius: 12px;
             height: 180px; /* Fixed height */
             overflow-y: auto; /* Changed from hidden to auto to enable scrolling */
-            margin-top: 15px;
+            margin-top: 16px;
             font-size: 0.85em;
             line-height: 1.6;
-            border: 1px solid #333;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+            border: 1px solid #374151;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
             display: flex;
             flex-direction: column;
             justify-content: flex-start; /* Items start from top */
@@ -274,113 +392,585 @@
             font-size: 1em;
         }
         .compact-form button {
-            padding: 10px 20px;
-            font-size: 1em;
+            padding: 12px 18px;
+            font-size: 0.95em;
             flex-direction: row;
-            box-shadow: none;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-radius: 10px;
         }
 
         .chart-container {
             position: relative;
             height: 200px;
             width: 100%;
-            margin-top: 15px;
+            margin-top: 18px;
+            padding: 12px;
+            background: linear-gradient(145deg, #fafbfc 0%, #f9fafb 100%);
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
         }
 
         #prob-text {
             font-size: 3em;
             font-weight: 800;
-            background: linear-gradient(45deg, #00c6ff, #0072ff);
+            background: linear-gradient(45deg, #3b82f6, #2563eb);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin: 10px 0;
+            margin: 12px 0;
             text-align: center;
         }
 
-        .duration-input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 25px;
-            border: 2px solid #ddd;
-            border-radius: 12px;
-            font-size: 1.3em;
-            text-align: center;
-            font-weight: bold;
-            color: #333;
-        }
-        .duration-input:focus { border-color: #00c6ff; outline: none; }
-
-        .slot-time {
-            font-size: 0.75em;
-            color: #d63031;
-            font-weight: bold;
-            margin-top: 5px;
-            background: rgba(255,255,255,0.8);
-            padding: 2px 5px;
-            border-radius: 4px;
-        }
-        
+        /* UPDATED: Prediction List → Cleaner */
         .prediction-list {
             text-align: left;
             margin-top: 20px;
-            font-size: 0.9em;
-            color: #555;
-        }
-        .prediction-item {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
+            font-size: 0.92rem;
+            color: #4b5563;
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+            background: linear-gradient(145deg, #fafbfc 0%, #f9fafb 100%);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
         }
 
+        .prediction-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .prediction-item:last-child {
+            border-bottom: none;
+        }
+
+        /* UPDATED: Sim Panel → Clean Card Style */
         .sim-panel {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 24px;
-            border: 1px solid #eee;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            background: linear-gradient(145deg, #fafbfc 0%, #f3f4f6 100%);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         
         .sim-controls {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             background: white;
-            padding: 10px;
-            border-radius: 16px;
-            border: 1px solid #eee;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
         }
 
-        .robot-status {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
+        /* UPDATED: Robot Cards → Modern Style */
         .robot-card {
             background: white;
-            padding: 15px 10px;
-            border-radius: 16px;
-            border: 1px solid #eee;
+            padding: 16px 12px;
+            border-radius: 14px;
+            border: 2px solid #e5e7eb;
             flex: 1;
             text-align: center;
             font-size: 0.9em;
-            transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
         
         .robot-card.active {
-            border-color: #4caf50;
-            background: #f1f8e9;
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
-            transform: translateY(-2px);
+            border-color: #10b981;
+            background: linear-gradient(145deg, #f0fdf4 0%, #ecfdf5 100%);
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.25);
+            transform: translateY(-3px);
+        }
+
+        /* UPDATED: Log Console → Softer Dark Theme */
+        .log-console {
+            background: linear-gradient(145deg, #1f2937 0%, #111827 100%);
+            color: #10b981;
+            font-family: "Consolas", monospace;
+            padding: 16px;
+            border-radius: 12px;
+            height: 180px;
+            overflow-y: auto;
+            margin-top: 16px;
+            font-size: 0.85em;
+            line-height: 1.6;
+            border: 1px solid #374151;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        /* UPDATED: Chart Container Background */
+        .chart-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+            margin-top: 18px;
+            padding: 12px;
+            background: linear-gradient(145deg, #fafbfc 0%, #f9fafb 100%);
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+        }
+
+        #prob-text {
+            font-size: 3em;
+            font-weight: 800;
+            background: linear-gradient(45deg, #3b82f6, #2563eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 12px 0;
+            text-align: center;
+        }
+
+        /* UPDATED: Prediction List → Cleaner */
+        .prediction-list {
+            text-align: left;
+            margin-top: 20px;
+            font-size: 0.92rem;
+            color: #4b5563;
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+            background: linear-gradient(145deg, #fafbfc 0%, #f9fafb 100%);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .prediction-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .prediction-item:last-child {
+            border-bottom: none;
+        }
+
+        /* UPDATED: Compact Form Buttons */
+        .compact-form button {
+            padding: 12px 18px;
+            font-size: 0.95em;
+            flex-direction: row;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-radius: 10px;
+        }
+
+        /* NEW: Feature Grid Styles for 8 Cards */
+        .features-section {
+            margin-bottom: 40px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 28px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 32px 24px;
+            text-align: center;
+            box-shadow: 
+                0 8px 24px rgba(0, 0, 0, 0.06),
+                0 2px 6px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(79, 172, 254, 0.08);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            min-height: 240px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, transparent 0%, rgba(79, 172, 254, 0.15) 100%);
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 0;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 
+                0 24px 48px rgba(0, 0, 0, 0.15),
+                0 12px 24px rgba(79, 172, 254, 0.2);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.4rem;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.15) rotate(8deg);
+        }
+
+        /* Gradient backgrounds for each icon */
+        .icon-smart { background: linear-gradient(135deg, #a8edea 0%, #4facfe 100%); }
+        .icon-ai { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .icon-booking { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
+        .icon-robot { background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%); }
+        .icon-dashboard { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
+        .icon-alerts { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .icon-heatmap { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .icon-multiuser { background: linear-gradient(135deg, #ffecd2 0%, #ff9a56 100%); }
+
+        .feature-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-family: "Segoe UI Semibold", system-ui, sans-serif;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .feature-desc {
+            font-size: 0.88rem;
+            color: #6b7280;
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .section-header h3 {
+            font-size: 2rem;
+            color: #FFFFFF; /* White text on blue bg */
+            margin-bottom: 12px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .section-header p {
+            font-size: 1.05rem;
+            color: #E2E8F0; /* Light gray text */
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* NEW: Stats Grid Section */
+        .stats-section {
+            margin-bottom: 50px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-box {
+            background: #FFFFFF;
+            border-radius: 18px;
+            padding: 28px 22px;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            border: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            color: var(--text-main);
+        }
+
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, transparent 0%, rgba(79, 172, 254, 0.1) 100%);
+            border-radius: 16px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 0;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.1),
+                0 5px 15px rgba(79, 172, 254, 0.15);
+        }
+
+        .stat-box:hover::before {
+            opacity: 1;
+        }
+
+        .stat-box > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1A1A1A; /* Dark text */
+            margin-bottom: 8px;
+            font-family: "Segoe UI Semibold", system-ui, sans-serif;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- IMPROVED VEHICLE ENTRY FORM --- */
+        .vehicle-entry-label {
+            display: block;
+            font-size: 1.15rem; /* Larger label */
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            margin-top: 5px;
+            letter-spacing: 0.02em;
+        }
+
+        .vehicle-mode-select, .duration-input {
+            width: 100%;
+            padding: 16px 20px; /* Much larger touch area */
+            font-size: 1.2rem; /* Larger input text */
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            background-color: #f8fafc;
+            color: #334155;
+            transition: all 0.2s ease;
+            outline: none;
+            font-family: inherit;
+            margin-bottom: 15px; /* More space below inputs */
+            appearance: none; /* Custom styling for select */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23334155' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+            background-size: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        
+        .duration-input {
+            background-image: none; /* No arrow for number input */
+        }
+
+        .vehicle-mode-select:focus, .duration-input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+            background-color: #fff;
+        }
+
+        /* --- IMPROVED HEADER USER NAV --- */
+        #user-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        /* Override default button styles for nav buttons */
+        #user-nav button {
+            min-height: auto !important;
+            height: auto !important;
+            padding: 12px 25px !important;
+            flex-direction: row !important;
+            gap: 8px !important;
+            width: auto !important;
+        }
+        
+        #user-nav button i {
+            font-size: 1em !important;
+            margin-bottom: 0 !important;
+        }
+
+        .nav-user-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 5px;
+        }
+        .nav-avatar {
+            width: 54px;
+            height: 54px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.5em;
+            box-shadow: 0 4px 10px rgba(30, 60, 114, 0.2);
+        }
+        .nav-user-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .nav-user-name {
+            font-weight: 800;
+            color: #1e3c72;
+            font-size: 1.3em;
+            line-height: 1.2;
+        }
+        .nav-user-status {
+            font-size: 0.9em;
+            color: #10b981;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .nav-btn-group {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .nav-btn {
+            padding: 14px 28px;
+            font-size: 1.05rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            border: none;
+        }
+        
+        .nav-btn-dashboard {
+            background: #3B82F6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .nav-btn-dashboard:hover { background: #2563EB; transform: translateY(-2px); }
+        
+        .nav-btn-logout {
+            background: white;
+            color: #EF4444;
+            border: 2px solid #fee2e2;
+        }
+        .nav-btn-logout:hover { background: #fef2f2; border-color: #EF4444; }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .stat-box {
+                padding: 22px 18px;
+            }
+
+            .stat-number {
+                font-size: 1.6rem;
+            }
+        }
+
+        /* TASK 4: Dashboard Grid Layout - RESPONSIVE FIX */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Slightly wider cards */
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        /* Restore specific ratio only on large screens */
+        @media (min-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 3fr 5fr 4fr;
+            }
+            .panel-left { grid-column: auto; }
+            .panel-center { grid-column: auto; }
+            .panel-right { grid-column: auto; }
+        }
+
+        .glass-panel {
+            padding: 24px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            padding: 40px 20px;
+            background: var(--bg-footer);
+            color: var(--text-bright);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        /* Responsive adjustments for footer */
+        @media (max-width: 768px) {
+            footer {
+                padding: 30px 15px;
+            }
         }
 
         /* Floating Toast Notification - FIXED & VISIBLE */
         .message {
             position: fixed;
-            bottom: 30px; /* Changed from top to bottom */
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 10000; /* Always on top */
+            z-index: 10000;
             padding: 15px 30px;
             border-radius: 50px;
             text-align: center;
@@ -392,6 +982,7 @@
             max-width: 90%;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
+            font-family: system-ui, -apple-system, "Segoe UI Semibold", sans-serif;
         }
         .message.success { 
             background: rgba(212, 237, 218, 0.95); 
@@ -404,13 +995,24 @@
             border-color: #f5c6cb; 
         }
         
-        @keyframes slideUpFade { from { opacity: 0; transform: translate(-50%, 50px); } to { opacity: 1; transform: translate(-50%, 0); } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; visibility: hidden; } }
+        @keyframes slideUpFade { 
+            from { opacity: 0; transform: translate(-50%, 50px); } 
+            to { opacity: 1; transform: translate(-50%, 0); } 
+        }
+        @keyframes fadeOut { 
+            from { opacity: 1; } 
+            to { opacity: 0; visibility: hidden; } 
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- Add Navigation Bar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);" id="user-nav">
+        <!-- Content injected by JS -->
+    </div>
+
     <div class="header">
         <h2><i class="fas fa-parking"></i> Smart Parking AI System</h2>
         <p>ML POWERED</p>
@@ -422,14 +1024,169 @@
     </div>
     {% endif %}
 
+    <!-- NEW: Stats Grid Section -->
+    <div class="stats-section">
+        <div class="section-header">
+            <h3>📊 System Statistics</h3>
+            <p>Real-time overview of parking facility performance and availability</p>
+        </div>
+
+        <div class="stats-grid">
+            <!-- Stat 1: Total Slots -->
+            <div class="stat-box">
+                <span class="stat-icon">🅿️</span>
+                <div class="stat-number" id="stat-total-slots">{{ status|length }}</div>
+                <div class="stat-label">Total Slots</div>
+            </div>
+
+            <!-- Stat 2: Available Now -->
+            <div class="stat-box">
+                <span class="stat-icon">✅</span>
+                <div class="stat-number" id="stat-available">
+                    {% set available = status.values() | selectattr('vehicle', 'none') | list | length %}
+                    {{ available }}
+                </div>
+                <div class="stat-label">Available Now</div>
+            </div>
+
+            <!-- Stat 3: Occupied -->
+            <div class="stat-box">
+                <span class="stat-icon">🚗</span>
+                <div class="stat-number" id="stat-occupied">
+                    {% set occupied = status.values() | rejectattr('vehicle', 'none') | list | length %}
+                    {{ occupied }}
+                </div>
+                <div class="stat-label">Occupied</div>
+            </div>
+
+            <!-- Stat 4: Success Rate -->
+            <div class="stat-box">
+                <span class="stat-icon">📈</span>
+                <div class="stat-number" id="stat-success-rate">90%</div>
+                <div class="stat-label">Success Rate</div>
+            </div>
+
+            <!-- Stat 5: VIP Slots -->
+            <div class="stat-box">
+                <span class="stat-icon">👑</span>
+                <div class="stat-number">
+                    {% set vip_slots = status.values() | selectattr('type', 'equalto', 'VIP') | list | length %}
+                    {{ vip_slots }}
+                </div>
+                <div class="stat-label">VIP Slots</div>
+            </div>
+
+            <!-- Stat 6: EV Charging -->
+            <div class="stat-box">
+                <span class="stat-icon">⚡</span>
+                <div class="stat-number">
+                    {% set ev_slots = status.values() | selectattr('type', 'equalto', 'EV') | list | length %}
+                    {{ ev_slots }}
+                </div>
+                <div class="stat-label">EV Charging</div>
+            </div>
+
+            <!-- Stat 7: Active Users -->
+            <div class="stat-box">
+                <span class="stat-icon">👥</span>
+                <div class="stat-number" id="stat-active-users">0</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+
+            <!-- Stat 8: Today's Revenue -->
+            <div class="stat-box">
+                <span class="stat-icon">💰</span>
+                <div class="stat-number" id="stat-revenue">$0</div>
+                <div class="stat-label">Today's Revenue</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Premium Feature Grid Section -->
+    <div class="features-section">
+        <div class="section-header">
+            <h3>✨ Powerful Features</h3>
+            <p>
+                An AI-powered parking automation platform with intelligent booking, 
+                real-time tracking, and seamless user experience.
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <!-- Feature 1: Smart Allocation -->
+            <div class="feature-card">
+                <div class="feature-icon icon-smart">⚙️</div>
+                <h4 class="feature-title">Smart Allocation</h4>
+                <p class="feature-desc">
+                    Automatically assigns the best slot based on type, priority and real-time availability.
+                </p>
+            </div>
+
+            <!-- Feature 2: AI Prediction -->
+            <div class="feature-card">
+                <div class="feature-icon icon-ai">🔮</div>
+                <h4 class="feature-title">AI Prediction</h4>
+                <p class="feature-desc">
+                    Predicts parking availability with intelligent machine-learning models.
+                </p>
+            </div>
+
+            <!-- Feature 3: Instant Booking -->
+            <div class="feature-card">
+                <div class="feature-icon icon-booking">⚡</div>
+                <h4 class="feature-title">Instant Booking</h4>
+                <p class="feature-desc">
+                    Book the ideal parking slot instantly with fast confirmation.
+                </p>
+            </div>
+
+            <!-- Feature 4: Robot Simulation -->
+            <div class="feature-card">
+                <div class="feature-icon icon-robot">🤖</div>
+                <h4 class="feature-title">Robot Simulation</h4>
+                <p class="feature-desc">
+                    Shows a smooth animation of how the parking robot moves and positions vehicles.
+                </p>
+            </div>
+
+            <!-- Feature 5: User Dashboard -->
+            <div class="feature-card">
+                <div class="feature-icon icon-dashboard">📊</div>
+                <h4 class="feature-title">User Dashboard</h4>
+                <p class="feature-desc">
+                    A clean dashboard to track bookings, timers, alerts and history.
+                </p>
+            </div>
+
+            <!-- Feature 6: Live Alerts -->
+            <div class="feature-card">
+                <div class="feature-icon icon-alerts">🔔</div>
+                <h4 class="feature-title">Live Alerts</h4>
+                <p class="feature-desc">
+                    Instant notifications for slot updates, expiry, and real-time status.
+                </p>
+            </div>
+        </div>
+
+        <!-- Use Cases Footer -->
+        <div style="text-align: center; margin-top: 35px; padding: 20px; background: linear-gradient(135deg, rgba(79,172,254,0.05) 0%, rgba(0,242,254,0.05) 100%); border-radius: 16px;">
+            <p style="font-size: 0.95rem; color: #4a5568; font-weight: 500;">
+                <strong style="color: #2d3748;">Perfect For:</strong> 
+                🏥 Hospitals · 🏢 Corporate Offices · 🛍️ Shopping Malls · 🏘️ Residential Complexes · 🌆 Smart Cities
+            </p>
+        </div>
+    </div>
+
     <div class="dashboard-grid">
         
         <!-- COLUMN 1: AI & Stats (Left) -->
         <div class="glass-panel panel-left">
-            <div class="section-title"><i class="fas fa-brain"></i> AI Forecast</div>
+            <div class="section-title">
+                <i class="fas fa-brain"></i> AI Forecast
+            </div>
             <div style="text-align: center;">
                 <div id="prob-text">--%</div>
-                <p style="color: #666; font-weight: 500; font-size: 1em;">Probability of finding a spot</p>
+                <p style="color: #6b7280; font-weight: 500; font-size: 1em; margin-top: 8px;">Probability of finding a spot</p>
             </div>
             <div class="chart-container">
                 <canvas id="predictionChart"></canvas>
@@ -441,25 +1198,40 @@
         </div>
 
         <!-- COLUMN 2: Main Controls (Center) -->
-        <div class="glass-panel panel-center" style="border: 2px solid #e0e0e0; background: #fafafa;">
-            <div class="section-title" style="justify-content: center; font-size: 1.4em;"><i class="fas fa-gamepad"></i> Vehicle Entry</div>
+        <div class="glass-panel panel-center" style="border: 2px solid #e5e7eb; background: linear-gradient(145deg, #fafbfc 0%, #f9fafb 100%);">
+            <div class="section-title section-title-center section-title-lg">
+                <i class="fas fa-gamepad"></i> Vehicle Entry
+            </div>
             
-            <!-- MOVED: Traffic Pattern Selector for Global Context -->
-            <div style="margin-bottom: 20px; padding: 0 5px;">
-                <label style="font-size: 0.85em; font-weight: bold; color: #555; display: block; margin-bottom: 5px; text-align: center;">
+            <!-- System Mode -->
+            <div style="margin-bottom: 22px; padding: 0 5px;">
+                <label class="vehicle-entry-label">
                     <i class="fas fa-sliders-h"></i> System Mode (Affects Allocation Rules)
                 </label>
-                <select id="trafficPattern" onchange="setPattern(this.value)" style="padding: 12px; border-radius: 12px; width: 100%; border: 2px solid #ccc; background: white; font-weight:bold; color:#333; cursor:pointer;">
+                <select
+                    id="trafficPattern"
+                    onchange="setPattern(this.value)"
+                    class="vehicle-mode-select"
+                    style="width: 100%;">
                     <option value="MANUAL">Manual Mode (Strict Types)</option>
                     <option value="PEAK">Peak Hours (Normal ➔ VIP Overflow)</option>
                     <option value="EVENT">Event Day (VIP ➔ Normal Overflow)</option>
                 </select>
             </div>
 
-            <!-- Updated Entry Form to use AJAX -->
+            <!-- Parking Duration -->
             <form onsubmit="handleForm(event, '/api/entry')">
-                <label style="display:block; margin-bottom:10px; font-weight:bold; text-align:center; color:#555;">⏱️ Parking Duration (Hours)</label>
-                <input type="number" name="duration" class="duration-input" value="1" min="0.5" step="0.5" required>
+                <label class="vehicle-entry-label">
+                    ⏱️ Parking Duration (Hours)
+                </label>
+                <input
+                    type="number"
+                    name="duration"
+                    class="duration-input"
+                    value="1"
+                    min="0.5"
+                    step="0.5"
+                    required>
                 
                 <div class="btn-grid">
                     <button name="type" value="AMBULANCE" class="btn-amb">
@@ -485,19 +1257,21 @@
         <div class="glass-panel panel-right">
             <!-- Simulation -->
             <div class="sim-panel">
-                <div class="section-title" style="font-size: 1.1em; margin-bottom: 15px;"><i class="fas fa-robot"></i> Auto Sim Control</div>
+                <div class="section-title section-title-center">
+                    <i class="fas fa-robot"></i> Auto Sim Control
+                </div>
                 
                 <div class="sim-controls">
-                    <button onclick="addToQueue('NORMAL')" style="background: #6c757d; font-size: 0.8em; padding: 10px; flex: 1;"><i class="fas fa-car"></i> +Car</button>
-                    <button onclick="addToQueue('VIP')" style="background: #FFD700; color: black; font-size: 0.8em; padding: 10px; flex: 1;"><i class="fas fa-crown"></i> +VIP</button>
-                    <!-- New Undo Button -->
+                    <button onclick="addToQueue('NORMAL')" style="background: #6c757d; font-size: 0.8em; padding: 10px; flex: 1;" title="Add Normal Car"><i class="fas fa-car"></i> +Car</button>
+                    <button onclick="addToQueue('VIP')" style="background: #FFD700; color: black; font-size: 0.8em; padding: 10px; flex: 1;" title="Add VIP Car"><i class="fas fa-crown"></i> +VIP</button>
                     <button onclick="undoLastVehicle()" style="background: #dc3545; font-size: 0.8em; padding: 10px; flex: 0.4;" title="Undo Last Entry"><i class="fas fa-undo"></i></button>
-                    <button onclick="toggleSim()" id="simBtn" style="background: #28a745; font-size: 0.8em; padding: 10px; flex: 1.5;"><i class="fas fa-play"></i> Start</button>
+                    <button onclick="resetSimulation()" style="background: #6610f2; font-size: 0.8em; padding: 10px; flex: 0.6;" title="Reset Simulation (Start from V#1)"><i class="fas fa-sync-alt"></i> Reset</button>
+                    <button onclick="toggleSim()" id="simBtn" style="background: #28a745; font-size: 0.8em; padding: 10px; flex: 1.2;"><i class="fas fa-play"></i> Start</button>
                 </div>
                 
                 <div class="robot-status" id="robot-container"></div>
                 <div class="queue-display" id="queue-viz"><span style="color:#aaa; font-style:italic;">Queue is empty</span></div>
-                <div style="font-size: 0.8em; color: #666; margin-top: 10px; font-weight: bold; text-align: right;" id="gen-stats">Total Auto-Gen: 0</div>
+                <div style="font-size: 0.8em; color: #6b7280; margin-top: 10px; font-weight: 600; text-align: right;" id="gen-stats">Total Auto-Gen: 0</div>
                 <div class="log-console" id="sim-logs">
                     <div class="log-entry">> System Ready...</div>
                 </div>
@@ -505,22 +1279,32 @@
 
             <!-- Reserve & Exit -->
             <div style="margin-top: 25px;">
-                <div class="section-title" style="font-size: 1.1em;"><i class="fas fa-lock"></i> Reserve Slot</div>
-                <!-- Updated Reserve Form with EV Button -->
+                <div class="section-title">
+                    <i class="fas fa-lock"></i> Reserve Slot
+                </div>
                 <form onsubmit="handleForm(event, '/api/reserve')" class="compact-form">
-                    <input type="number" name="duration" value="2" min="1" step="0.5" placeholder="Hrs" style="width: 60px; flex: 0 0 60px;">
-                    <button name="type" value="VIP" class="btn-reserve" style="flex:1; font-size: 0.8em; padding: 10px;"><i class="fas fa-crown" style="font-size:1em;"></i> VIP</button>
-                    <button name="type" value="EV" class="btn-reserve" style="flex:1; font-size: 0.8em; padding: 10px; background: linear-gradient(135deg, #00c6ff, #0072ff);"><i class="fas fa-bolt" style="font-size:1em;"></i> EV</button>
-                    <button name="type" value="NORMAL" class="btn-reserve" style="flex:1; font-size: 0.8em; padding: 10px;"><i class="fas fa-car" style="font-size:1em;"></i> Std</button>
+                    <input type="number" name="duration" value="2" min="1" step="0.5" placeholder="Hrs" style="width: 70px; flex: 0 0 70px;">
+                    <button name="type" value="VIP" style="flex:1; font-size: 0.85em; padding: 12px 10px; background: linear-gradient(135deg, #ffeaa7 0%, #f9ca24 45%, #d68910 100%); color:#3b2b00; flex-direction: row; gap: 6px;">
+                        <i class="fas fa-crown" style="font-size:1em;"></i> <span>VIP</span>
+                    </button>
+                    <button name="type" value="EV" style="flex:1; font-size: 0.85em; padding: 12px 10px; background: linear-gradient(135deg, #81ecec 0%, #00c6ff 45%, #0072ff 100%); color:#01324f; flex-direction: row; gap: 6px;">
+                        <i class="fas fa-bolt" style="font-size:1em;"></i> <span>EV</span>
+                    </button>
+                    <button name="type" value="NORMAL" style="flex:1; font-size: 0.85em; padding: 12px 10px; background: linear-gradient(135deg, #ced4da 0%, #6c757d 45%, #495057 100%); color:#f8f9fa; flex-direction: row; gap: 6px;">
+                        <i class="fas fa-car" style="font-size:1em;"></i> <span>Std</span>
+                    </button>
                 </form>
             </div>
             
             <div style="margin-top: 25px;">
-                <div class="section-title" style="font-size: 1.1em;"><i class="fas fa-sign-out-alt"></i> Quick Exit</div>
-                <!-- Updated Exit Form -->
+                <div class="section-title">
+                    <i class="fas fa-sign-out-alt"></i> Quick Exit
+                </div>
                 <form onsubmit="handleForm(event, '/api/exit')" class="compact-form">
-                    <input type="number" name="slot" placeholder="Slot #" required min="1" max="{{ status|length }}">
-                    <button style="background: #343a40;">Exit</button>
+                    <input type="number" name="slot" placeholder="Slot #" required min="1" max="{{ status|length }}" style="flex: 1;">
+                    <button style="background: linear-gradient(135deg, #343a40 0%, #212529 100%); color:#f8f9fa; padding: 12px 20px; flex-direction: row; gap: 8px;">
+                        <i class="fas fa-sign-out-alt"></i> <span>Exit</span>
+                    </button>
                 </form>
             </div>
         </div>
@@ -572,103 +1356,415 @@
             </div>
         {% endfor %}
     </div>
+    
+    <!-- Footer -->
+    <footer style="margin-top: auto; padding: 40px 20px; background: var(--bg-footer); color: var(--text-bright); border-top: 1px solid rgba(255,255,255,0.1);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 25px;">
+            <!-- Brand -->
+            <div>
+                <h3 style="margin-bottom: 15px; font-size: 1.3em; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-parking"></i> Smart Parking  AI System
+                </h3>
+                <p style="font-size: 0.9em; color: rgba(255,255,255,0.8); line-height: 1.7;">
+                    An intelligent parking management system built to demonstrate DDCO concepts including ALU, FSM, Priority Encoders, and more.
+                </p>
+                <div style="margin-top: 15px; display: flex; gap: 12px;">
+                    <a href="#" style="color: white; font-size: 1.3em; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"><i class="fab fa-github"></i></a>
+                    <a href="#" style="color: white; font-size: 1.3em; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" style="color: white; font-size: 1.3em; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+            
+            <!-- Quick Links -->
+            <div>
+                <h4 style="margin-bottom: 15px; font-size: 1em; color: #ffd700;"><i class="fas fa-link"></i> Quick Links</h4>
+                <ul style="list-style: none; font-size: 0.9em; line-height: 2.2;">
+                    <li><a href="/" style="color: rgba(255,255,255,0.85); text-decoration: none; transition: 0.2s;" onmouseover="this.style.color='#ffd700'" onmouseout="this.style.color='rgba(255,255,255,0.85)'"><i class="fas fa-home" style="width: 20px;"></i> Home</a></li>
+                    <li><a href="/login" style="color: rgba(255,255,255,0.85); text-decoration: none; transition: 0.2s;" onmouseover="this.style.color='#ffd700'" onmouseout="this.style.color='rgba(255,255,255,0.85)'"><i class="fas fa-sign-in-alt" style="width: 20px;"></i> Login / Register</a></li>
+                    <li><a href="/dashboard" style="color: rgba(255,255,255,0.85); text-decoration: none; transition: 0.2s;" onmouseover="this.style.color='#ffd700'" onmouseout="this.style.color='rgba(255,255,255,0.85)'"><i class="fas fa-tachometer-alt" style="width: 20px;"></i> Dashboard</a></li>
+                    <li><a href="/docs" style="color: rgba(255,255,255,0.85); text-decoration: none; transition: 0.2s;" onmouseover="this.style.color='#ffd700'" onmouseout="this.style.color='rgba(255,255,255,0.85)'"><i class="fas fa-book" style="width: 20px;"></i> API Documentation</a></li>
+                </ul>
+            </div>
+            
+            <!-- DDCO Concepts -->
+            <div>
+                <h4 style="margin-bottom: 15px; font-size: 1em; color: #00c6ff;"><i class="fas fa-microchip"></i> DDCO Concepts</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <span style="background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 20px; font-size: 0.8em;">ALU</span>
+                    <span style="background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 20px; font-size: 0.8em;">FSM</span>
+                    <span style="background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 20px; font-size: 0.8em;">Priority Encoder</span>
+                    <span style="background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 20px; font-size: 0.8em;">Register File</span>
+                    <span style="background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 20px; font-size: 0.8em;">FIFO Queue</span>
+                    <span style="background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 20px; font-size: 0.8em;">MUX</span>
+                    <span style="background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 20px; font-size: 0.8em;">Cache Lock</span>
+                </div>
+            </div>
+            
+            <!-- Contact -->
+            <div>
+                <h4 style="margin-bottom: 15px; font-size: 1em; color: #38ef7d;"><i class="fas fa-envelope"></i> Contact</h4>
+                <p style="font-size: 0.9em; color: rgba(255,255,255,0.85); line-height: 2;">
+                    <i class="fas fa-envelope" style="width: 20px; color: #38ef7d;"></i> support@smartparking.ai<br>
+                    <i class="fas fa-phone" style="width: 20px; color: #38ef7d;"></i> +91 98765 43210<br>
+                    <i class="fas fa-map-marker-alt" style="width: 20px; color: #38ef7d;"></i> Tech Campus, Bangalore
+                </p>
+            </div>
+        </div>
+        
+        <!-- Divider -->
+        <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.2); margin: 20px 0;">
+        
+        <!-- Bottom Bar -->
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; font-size: 0.85em;">
+            <p style="color: rgba(255,255,255,0.7);">
+                © 2024 Smart Parking AI System 
+            </p>
+            <p style="color: rgba(255,255,255,0.7);">
+                Made with <i class="fas fa-heart" style="color: #ff6b6b; animation: pulse 1s infinite;"></i> for Learning
+            </p>
+        </div>
+    </footer>
 </div>
 
 <script>
     // API Key injected from server (Securely loaded from .env)
     const API_KEY = "{{ api_key }}";
 
+    // Check Login Status
+    const user = JSON.parse(localStorage.getItem('user'));
+    const navDiv = document.getElementById('user-nav');
+    
+    if (user) {
+        // LOGGED IN VIEW - UPDATED LAYOUT
+        navDiv.innerHTML = `
+            <div class="nav-user-card">
+                <div class="nav-avatar">
+                    ${user.name.charAt(0).toUpperCase()}
+                </div>
+                <div class="nav-user-details">
+                    <div class="nav-user-name">${user.name}</div>
+                    <div class="nav-user-status"><i class="fas fa-circle" style="font-size:0.7em;"></i> Online</div>
+                </div>
+            </div>
+            <div class="nav-btn-group">
+                <button onclick="window.location.href='/dashboard'" class="nav-btn nav-btn-dashboard">
+                    <i class="fas fa-columns"></i> My Dashboard
+                </button>
+                <button onclick="logout()" class="nav-btn nav-btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        `;
+    } else {
+        // PUBLIC / GUEST VIEW - FIXED COMPACT BUTTON
+        navDiv.innerHTML = `
+            <div style="font-weight: 800; color: #333; font-size: 1.4em; letter-spacing:-0.5px;">
+                <i class="fas fa-parking" style="color:#1e3c72;"></i> Public Portal
+            </div>
+            <button onclick="window.location.href='/login'" style="padding: 12px 25px; font-size: 1em; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight:bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.2s; min-height: auto; width: auto; flex-direction: row; gap: 8px;">
+                <i class="fas fa-user-circle"></i> Login / Register
+            </button>
+        `;
+    }
+
+    function logout() {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+    }
+
     // Preserve scroll position on reload
-    document.addEventListener("DOMContentLoaded", function(event) { 
+    window.addEventListener("beforeunload", function() {
+        localStorage.setItem('scrollpos', window.scrollY);
+    });
+    
+    window.addEventListener("load", function() {
         var scrollpos = localStorage.getItem('scrollpos');
-        if (scrollpos) window.scrollTo(0, scrollpos);
+        if (scrollpos) {
+            window.scrollTo(0, parseInt(scrollpos));
+        }
     });
 
-    window.onbeforeunload = function(e) {
-        localStorage.setItem('scrollpos', window.scrollY);
-    };
+    // === CHART AND PREDICTION CODE - FIXED ===
+    
+    // Global chart variable
+    let myChart = null;
 
-    // Fetch AI Prediction Data
-    async function updatePrediction() {
+    // Initialize everything after DOM is ready
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("🚀 DOM loaded, initializing...");
+        
+        // Initialize Chart
+        initChart();
+        
+        // Initialize robot container
+        initRobotContainer();
+        
+        // Load initial data
+        updatePrediction();
+        updateStats();
+        
+        // Auto-refresh prediction every 5 seconds (faster refresh)
+        setInterval(updatePrediction, 5000);
+        setInterval(updateStats, 5000);
+    });
+
+    function initChart() {
+        const canvas = document.getElementById('predictionChart');
+        if (!canvas) {
+            console.error('❌ Canvas element not found!');
+            return;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            console.error('❌ Could not get canvas context!');
+            return;
+        }
+        
         try {
-            const response = await fetch('/api/predict');
-            const data = await response.json();
-            
-            document.getElementById('prob-text').innerText = data.probability + "%";
-            
-            // Peak Hour Warning
-            if (data.is_peak) {
-                if (!document.getElementById('peak-warning')) {
-                    const warning = document.createElement('div');
-                    warning.id = 'peak-warning';
-                    warning.style.fontSize = '0.4em';
-                    warning.style.color = 'orange';
-                    warning.style.marginTop = '5px';
-                    warning.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Peak Hour Traffic';
-                    document.getElementById('prob-text').appendChild(warning);
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Available', 'Occupied'],
+                    datasets: [{
+                        data: [100, 0],  // Start with all available
+                        backgroundColor: ['#10B981', '#EF4444'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: false,
+                        duration: 500
+                    }
                 }
-            } else {
-                const w = document.getElementById('peak-warning');
-                if (w) w.remove();
-            }
-
-            // Update Chart
-            myChart.data.datasets[0].data = [data.probability, 100 - data.probability];
-            myChart.update();
-            
-            // Update Upcoming Slots List
-            const listDiv = document.getElementById('upcoming-slots');
-            if (data.upcoming && data.upcoming.length > 0) {
-                let html = '<strong>⏳ Upcoming Availability:</strong>';
-                data.upcoming.forEach(item => {
-                    let timeStr = "";
-                    if (item.hours_left > 0) timeStr += `${item.hours_left}h `;
-                    timeStr += `${item.mins_left}m`;
-
-                    html += `<div class="prediction-item">
-                        <i class="fas fa-clock" style="color:#0072ff;"></i> 
-                        Slot <b>${item.slot}</b> free at <b>${item.free_at}</b> 
-                        <span style="color:#666; font-size:0.9em;">(in ${timeStr})</span>
-                    </div>`;
-                });
-                listDiv.innerHTML = html;
-            } else {
-                listDiv.innerHTML = '<div class="prediction-item">No occupied slots freeing up soon.</div>';
-            }
-            
+            });
+            console.log('✅ Chart initialized successfully');
         } catch (error) {
-            console.error('Error fetching prediction:', error);
+            console.error('❌ Chart initialization error:', error);
         }
     }
 
-    // Initialize Chart.js
-    const ctx = document.getElementById('predictionChart').getContext('2d');
-    const myChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Success', 'Risk'],
-            datasets: [{
-                data: [50, 50],
-                backgroundColor: ['#00c6ff', '#eee'],
-                borderWidth: 0,
-                hoverOffset: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '70%',
-            plugins: { legend: { display: false } }
-        }
-    });
-
-    // Call prediction on load
-    updatePrediction();
-
-    // --- NEW AJAX FORM HANDLER (UPDATED FOR JSON + API KEY) ---
-    async function handleForm(event, endpoint) {
-        event.preventDefault(); // Stop page reload
+    // Fetch AI Prediction Data AND update chart with actual slot data
+    async function updatePrediction() {
+        const probText = document.getElementById('prob-text');
+        const listDiv = document.getElementById('upcoming-slots');
         
+        try {
+            // Fetch both prediction and status
+            const [predResponse, statusResponse] = await Promise.all([
+                fetch('/api/predict?t=' + Date.now()),
+                fetch('/api/status?t=' + Date.now())
+            ]);
+            
+            if (!predResponse.ok || !statusResponse.ok) {
+                console.error('API error');
+                return;
+            }
+            
+            const predData = await predResponse.json();
+            const statusData = await statusResponse.json();
+            
+            // Calculate actual available/occupied from status
+            const slotsArray = Object.values(statusData);
+            const total = slotsArray.length;
+            const occupied = slotsArray.filter(s => s.vehicle !== null).length;
+            const available = total - occupied;
+            
+            // Calculate percentages
+            const availablePercent = total > 0 ? Math.round((available / total) * 100) : 0;
+            const occupiedPercent = 100 - availablePercent;
+            
+            console.log(`📊 Slots: ${available}/${total} available (${availablePercent}%)`);
+            
+            // Update probability text with availability percentage
+            if (probText) {
+                probText.innerText = availablePercent + "%";
+            }
+            
+            // Peak Hour Warning
+            const existingWarning = document.getElementById('peak-warning');
+            if (predData.is_peak) {
+                if (!existingWarning && probText) {
+                    const warning = document.createElement('div');
+                    warning.id = 'peak-warning';
+                    warning.style.cssText = 'font-size: 0.35em; color: #F59E0B; margin-top: 8px; font-weight: 600;';
+                    warning.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Peak Hour Traffic';
+                    probText.parentNode.appendChild(warning);
+                }
+            } else if (existingWarning) {
+                existingWarning.remove();
+            }
+
+            // Update Chart with ACTUAL slot data
+            if (myChart) {
+                myChart.data.datasets[0].data = [availablePercent, occupiedPercent];
+                myChart.update('active');
+                console.log('📈 Chart updated:', availablePercent, occupiedPercent);
+            }
+            
+            // Update Upcoming Slots List
+            if (listDiv) {
+                if (predData.upcoming && predData.upcoming.length > 0) {
+                    let html = '<strong style="color: #374151;">⏳ Upcoming Availability:</strong>';
+                    predData.upcoming.forEach(item => {
+                        let timeStr = "";
+                        if (item.hours_left > 0) timeStr += `${item.hours_left}h `;
+                        timeStr += `${item.mins_left}m`;
+
+                        html += `<div class="prediction-item">
+                            <i class="fas fa-clock" style="color:#3B82F6;"></i> 
+                            Slot <b>${item.slot}</b> free at <b>${item.free_at}</b> 
+                            <span style="color:#6B7280; font-size:0.9em;">(in ${timeStr})</span>
+                        </div>`;
+                    });
+                    listDiv.innerHTML = html;
+                } else {
+                    // Show current status summary
+                    listDiv.innerHTML = `
+                        <div class="prediction-item">
+                            <i class="fas fa-check-circle" style="color:#10B981;"></i> 
+                            <b>${available}</b> of <b>${total}</b> slots available
+                        </div>
+                        ${occupied > 0 ? `<div class="prediction-item"><i class="fas fa-car" style="color:#EF4444;"></i> <b>${occupied}</b> slots occupied</div>` : ''}
+                    `;
+                }
+            }
+            
+        } catch (error) {
+            console.error('❌ Error fetching prediction:', error);
+            if (probText) {
+                probText.innerText = "--";
+            }
+        }
+    }
+
+    // Initialize robot container on page load
+    function initRobotContainer() {
+        const robotDiv = document.getElementById('robot-container');
+        if (robotDiv) {
+            robotDiv.innerHTML = `
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <div class="robot-card">
+                        <div>🤖 R1</div>
+                        <div style="font-weight:bold; color:#6c757d">IDLE</div>
+                    </div>
+                    <div class="robot-card">
+                        <div>🤖 R2</div>
+                        <div style="font-weight:bold; color:#6c757d">IDLE</div>
+                    </div>
+                    <div class="robot-card">
+                        <div>🤖 R3</div>
+                        <div style="font-weight:bold; color:#6c757d">IDLE</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // Log simulation messages to the console
+    function logSim(message) {
+        const logDiv = document.getElementById('sim-logs');
+        if (!logDiv) return;
+        
+        const timestamp = new Date().toLocaleTimeString();
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `<span style="color:#888;">[${timestamp}]</span> ${message}`;
+        logDiv.appendChild(entry);
+        
+        // Keep only last 50 entries
+        while (logDiv.children.length > 50) {
+            logDiv.removeChild(logDiv.firstChild);
+        }
+        
+        // Auto-scroll to bottom
+        logDiv.scrollTop = logDiv.scrollHeight;
+    }
+    
+    // Get color based on robot state
+    function getStateColor(state) {
+        switch(state) {
+            case 'IDLE': return '#6c757d';
+            case 'MOVING_TO_SLOT': return '#007bff';
+            case 'PARKING': return '#28a745';
+            case 'RETURNING': return '#ffc107';
+            default: return '#6c757d';
+        }
+    }
+    
+    // Update statistics display - also triggers chart update
+    function updateStats() {
+        fetch('/api/status?t=' + Date.now())
+            .then(res => res.json())
+            .then(slots => {
+                const slotsArray = Object.values(slots);
+                const total = slotsArray.length;
+                const occupied = slotsArray.filter(s => s.vehicle !== null).length;
+                const available = total - occupied;
+                
+                // Update stat boxes
+                const statAvailable = document.getElementById('stat-available');
+                const statOccupied = document.getElementById('stat-occupied');
+                
+                if (statAvailable) statAvailable.textContent = available;
+                if (statOccupied) statOccupied.textContent = occupied;
+                
+                // Calculate and update success rate (availability percentage)
+                const successRate = total > 0 ? Math.round((available / total) * 100) : 0;
+                const statSuccess = document.getElementById('stat-success-rate');
+                if (statSuccess) statSuccess.textContent = successRate + '%';
+                
+                // Also update the chart here for redundancy
+                if (myChart) {
+                    const availablePercent = total > 0 ? Math.round((available / total) * 100) : 0;
+                    const occupiedPercent = 100 - availablePercent;
+                    myChart.data.datasets[0].data = [availablePercent, occupiedPercent];
+                    myChart.update('none');
+                }
+                
+                // Update probability text
+                const probText = document.getElementById('prob-text');
+                if (probText) {
+                    probText.innerText = successRate + '%';
+                }
+            })
+            .catch(err => console.error('Stats update error:', err));
+    }
+
+    // --- FORM HANDLING AND NOTIFICATIONS ---
+
+    // --- IMPROVED AJAX FORM HANDLER (UPDATED FOR JSON + API KEY) ---
+    async function handleForm(event, endpoint) {
+        event.preventDefault();
+        
+        const token = localStorage.getItem('access_token');
+        console.log("🔐 Token:", token ? token.substring(0, 50) + "..." : "NONE");
+        
+        if (!token) {
+            const wantLogin = confirm("🔒 Login Required\n\nYou must be logged in to book a parking slot.\n\nClick OK to go to the Login page.");
+            if (wantLogin) {
+                window.location.href = '/login';
+            }
+            return;
+        }
+
         const submitter = event.submitter;
         const form = event.target;
         const formData = new FormData(form);
@@ -677,45 +1773,51 @@
             formData.append(submitter.name, submitter.value);
         }
 
-        // Convert FormData to JSON object
         const plainFormData = Object.fromEntries(formData.entries());
         
-        // Ensure numeric types are actually numbers for Pydantic validation
         if (plainFormData.duration) plainFormData.duration = parseFloat(plainFormData.duration);
         if (plainFormData.slot) plainFormData.slot = parseInt(plainFormData.slot);
+
+        console.log("📤 Request:", endpoint, plainFormData);
+
 
         try {
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-API-KEY': API_KEY
+                    'X-API-KEY': API_KEY,
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(plainFormData)
             });
             
             const data = await response.json();
+            console.log("📥 Response:", response.status, data);
             
             if (!response.ok) {
+                if (response.status === 401) {
+                    console.log("❌ Auth failed - clearing token");
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('user');
+                    alert("Session expired. Please login again.");
+                    window.location.href = '/login';
+                    return;
+                }
                 throw new Error(data.detail || data.message || "Request failed");
             }
             
-            // Determine message type
-            const isError = data.message.includes('FULL') || data.message.includes('Invalid') || data.message.includes('Cannot');
-            
+            const isError = data.message && (data.message.includes('FULL') || data.message.includes('Invalid') || data.message.includes('Cannot'));
             showNotification(data.message, isError ? 'error' : 'success');
-            
-            // Refresh Grid immediately
             await updateGrid();
             
-            // Clear Exit form only
             if(endpoint.includes('exit')) {
                 form.reset();
-                setTimeout(updateGrid, 100); 
             }
             
+            
         } catch (error) {
-            console.error('Action failed:', error);
+            console.error('❌ Error:', error);
             showNotification(error.message, "error");
         }
     }
@@ -738,15 +1840,21 @@
     let simInterval = null;
 
     async function setPattern(mode) {
-        await fetch('/api/simulate/pattern', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-KEY': API_KEY
-            },
-            body: JSON.stringify({ mode: mode })
-        });
-        logSim(`Traffic Pattern switched to: ${mode}`);
+        try {
+            const response = await fetch('/api/simulate/pattern', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-KEY': API_KEY
+                },
+                body: JSON.stringify({ mode: mode })
+            });
+            const data = await response.json();
+            logSim(`Traffic Pattern switched to: ${mode}`);
+        } catch (error) {
+            console.error('Pattern error:', error);
+            logSim(`❌ Error setting pattern: ${error.message}`);
+        }
     }
 
     async function addToQueue(type) {
@@ -755,25 +1863,85 @@
             duration: 2.0
         };
         
-        const response = await fetch('/api/simulate/add_vehicle', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-KEY': API_KEY
-            },
-            body: JSON.stringify(payload)
-        });
-        const data = await response.json();
-        logSim(`Manual Add: ${data.message}`);
+        try {
+            const response = await fetch('/api/simulate/add_vehicle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-KEY': API_KEY
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            logSim(`Manual Add: ${data.message}`);
+        } catch (error) {
+            console.error('Add to queue error:', error);
+            logSim(`❌ Error adding vehicle: ${error.message}`);
+        }
     }
 
     async function undoLastVehicle() {
-        const response = await fetch('/api/simulate/undo', { 
-            method: 'POST',
-            headers: { 'X-API-KEY': API_KEY }
-        });
-        const data = await response.json();
-        logSim(data.message);
+        try {
+            const response = await fetch('/api/simulate/undo', { 
+                method: 'POST',
+                headers: { 'X-API-KEY': API_KEY }
+            });
+            const data = await response.json();
+            logSim(data.message);
+        } catch (error) {
+            console.error('Undo error:', error);
+            logSim(`❌ Error undoing: ${error.message}`);
+        }
+    }
+
+    async function resetSimulation() {
+        // Confirm before reset
+        if (!confirm("🔄 Reset Simulation?\n\nThis will:\n• Clear all vehicles in queue\n• Reset vehicle counter to start from #1\n• Reset all robots to IDLE\n\nContinue?")) {
+            return;
+        }
+        
+        try {
+            // Stop simulation if running
+            if (simInterval) {
+                clearInterval(simInterval);
+                simInterval = null;
+                const btn = document.getElementById('simBtn');
+                btn.innerHTML = "<i class='fas fa-play'></i> Start";
+                btn.style.background = "#28a745";
+            }
+            
+            const response = await fetch('/api/simulate/reset', { 
+                method: 'POST',
+                headers: { 'X-API-KEY': API_KEY }
+            });
+            const data = await response.json();
+            logSim(`🔄 ${data.message}`);
+            showNotification(data.message, 'success');
+            
+            // Reset UI elements
+            const queueDiv = document.getElementById('queue-viz');
+            if (queueDiv) {
+                queueDiv.innerHTML = '<span style="color:#aaa; font-style:italic;">Queue is empty</span>';
+            }
+            
+            const genStats = document.getElementById('gen-stats');
+            if (genStats) {
+                genStats.innerText = 'Total Auto-Gen: 0';
+            }
+            
+            // Reinitialize robot display
+            initRobotContainer();
+            
+            // Clear log console (keep only reset message)
+            const logDiv = document.getElementById('sim-logs');
+            if (logDiv) {
+                logDiv.innerHTML = '<div class="log-entry">> Simulation Reset. Ready for new session...</div>';
+            }
+            
+        } catch (error) {
+            console.error('Reset error:', error);
+            logSim(`❌ Error resetting: ${error.message}`);
+        }
     }
 
     function toggleSim() {
@@ -781,12 +1949,14 @@
         if (simInterval) {
             clearInterval(simInterval);
             simInterval = null;
-            btn.innerText = "▶ Start";
+            btn.innerHTML = "<i class='fas fa-play'></i> Start";
             btn.style.background = "#28a745";
+            logSim("⏸️ Simulation PAUSED");
         } else {
-            simInterval = setInterval(runSimStep, 2500); // Slowed down to 2.5 seconds
-            btn.innerText = "⏸ Pause";
+            simInterval = setInterval(runSimStep, 2500); // 2.5 seconds per tick
+            btn.innerHTML = "<i class='fas fa-pause'></i> Pause";
             btn.style.background = "#dc3545";
+            logSim("▶️ Simulation STARTED");
         }
     }
 
@@ -795,50 +1965,72 @@
             const response = await fetch('/api/simulate/step', {
                 headers: { 'X-API-KEY': API_KEY }
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
             const data = await response.json();
             
             // Update Logs & Trigger Notifications
-            data.logs.forEach(log => {
-                logSim(log);
-                // Trigger Web Notification for Robot Actions
-                if (log.includes("picked up Vehicle")) {
-                    showNotification(log, "success");
-                }
-            });
+            if (data.logs && data.logs.length > 0) {
+                data.logs.forEach(log => {
+                    logSim(log);
+                    // Trigger Web Notification for Robot Actions
+                    if (log.includes("picked up Vehicle") || log.includes("parked Vehicle")) {
+                        showNotification(log, "success");
+                    }
+                });
+            }
             
-            // Update Robots
+            // Update Robots Display
             const robotDiv = document.getElementById('robot-container');
-            robotDiv.innerHTML = data.robots.map(r => `
-                <div class="robot-card ${r.state !== 'IDLE' ? 'active' : ''}">
-                    <div>🤖 R${r.id}</div>
-                    <div style="font-weight:bold; color:${getStateColor(r.state)}">${r.state}</div>
-                    ${r.vehicle ? `<div>🚗 ${r.vehicle}</div>` : ''}
-                </div>
-            `).join('');
+            if (robotDiv && data.robots) {
+                robotDiv.innerHTML = `
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        ${data.robots.map(r => `
+                            <div class="robot-card ${r.state !== 'IDLE' ? 'active' : ''}">
+                                <div>🤖 R${r.id}</div>
+                                <div style="font-weight:bold; color:${getStateColor(r.state)}">${r.state}</div>
+                                ${r.vehicle ? `<div style="font-size:0.85em; margin-top:5px;">🚗 ${r.vehicle}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
             
-            // Update Queue Visualization (Visual Badges)
+            // Update Queue Visualization
             const queueDiv = document.getElementById('queue-viz');
-            if (data.queue_len > 0) {
-                // We don't have full queue details in this endpoint, so we simulate visual representation
-                // Ideally backend sends list of vehicle types in queue
-                let qHtml = `<span style="margin-right:10px; font-weight:bold;">Queue (${data.queue_len}):</span>`;
-                for(let i=0; i<Math.min(data.queue_len, 10); i++) {
-                    qHtml += `<div class="queue-item"><i class="fas fa-car"></i></div>`;
+            if (queueDiv) {
+                if (data.queue_len > 0) {
+                    let qHtml = `<span style="margin-right:10px; font-weight:bold; color:#fff;">Queue (${data.queue_len}):</span>`;
+                    for(let i = 0; i < Math.min(data.queue_len, 10); i++) {
+                        qHtml += `<div style="background:#4a5568; padding:5px 10px; border-radius:8px; font-size:0.85em;"><i class="fas fa-car"></i></div>`;
+                    }
+                    if(data.queue_len > 10) {
+                        qHtml += `<span style="color:#aaa;">+${data.queue_len - 10} more</span>`;
+                    }
+                    queueDiv.innerHTML = qHtml;
+                } else {
+                    queueDiv.innerHTML = '<span style="color:#aaa; font-style:italic;">Queue is empty</span>';
                 }
-                if(data.queue_len > 10) qHtml += `<span>+${data.queue_len-10} more</span>`;
-                queueDiv.innerHTML = qHtml;
-            } else {
-                queueDiv.innerHTML = '<span style="color:#aaa; font-style:italic;">Queue is empty</span>';
             }
 
+            // Update generation stats
             if(data.total_gen !== undefined) {
-                document.getElementById('gen-stats').innerText = `Total Auto-Gen: ${data.total_gen}`;
+                const genStats = document.getElementById('gen-stats');
+                if (genStats) {
+                    genStats.innerText = `Total Auto-Gen: ${data.total_gen}`;
+                }
             }
             
-            updateGrid();
+            // Refresh the parking grid and stats
+            await updateGrid();
+            updateStats();
             
-        } catch (e) {
-            console.error(e);
+        } catch (error) {
+            console.error('Simulation step error:', error);
+            logSim(`❌ Sim Error: ${error.message}`);
         }
     }
 
@@ -861,9 +2053,8 @@
 
     async function updateGrid() {
         try {
-            // Added timestamp to prevent browser caching
             const response = await fetch('/api/status?t=' + new Date().getTime());
-            if (!response.ok) throw new Error("API Error"); // Catch non-200 responses
+            if (!response.ok) throw new Error("API Error");
             const slots = await response.json();
             const container = document.getElementById('parking-grid-container');
             
@@ -924,33 +2115,19 @@
                 </div>`;
             }
             container.innerHTML = html;
-            updatePrediction(); // Also refresh AI stats
+            
+            // IMPORTANT: Update chart and stats after grid update
+            updateStats();
+            
         } catch (e) {
             console.error("Grid update failed", e);
         }
     }
 
-    function getStateColor(state) {
-        if (state === 'IDLE') return '#999';
-        if (state === 'MOVING_TO_SLOT') return '#007bff';
-        if (state === 'PARKING') return '#28a745';
-        return '#e0a800';
-    }
-
-    function logSim(msg) {
-        const consoleDiv = document.getElementById('sim-logs');
-        const line = document.createElement('div');
-        line.className = 'log-entry';
-        line.innerText = `> ${msg}`;
-        
-        // Add new message to the top
-        consoleDiv.prepend(line);
-        
-        // Increased limit to 50 to allow scrolling through history
-        while (consoleDiv.children.length > 50) {
-            consoleDiv.removeChild(consoleDiv.lastChild);
-        }
-    }
+    // Initial stats update on page load
+    document.addEventListener("DOMContentLoaded", function() {
+        updateStats();
+    });
 </script>
 
 </body>
